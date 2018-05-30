@@ -1,0 +1,9 @@
+[package]
+name = "autocfg"
+version = "0.0.1"
+authors = ["Josh Stone <cuviper@gmail.com>"]
+license = "Apache-2.0/MIT"
+repository = "https://github.com/cuviper/autocfg"
+description = "[TODO] automatic cfg for compiler features"
+
+[dependencies]
