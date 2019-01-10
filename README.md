@@ -31,7 +31,7 @@ fn main() {
     ac.emit_has_type("i128");
 
     // (optional) We don't need to rerun for anything external.
-    println!("cargo:rerun-if-changed=build.rs");
+    autocfg::rerun_path(file!());
 }
 ```
 
