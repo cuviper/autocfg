@@ -25,7 +25,7 @@
 //!     ac.emit_has_type("i128");
 //!
 //!     // (optional) We don't need to rerun for anything external.
-//!     println!("cargo:rerun-if-changed=build.rs");
+//!     autocfg::rerun_path(file!());
 //! }
 //! ```
 //!
@@ -63,8 +63,33 @@ pub struct AutoCfg {
 }
 
 /// Writes a config flag for rustc on standard out.
+///
+/// This looks like: `cargo:rustc-cfg=CFG`
+///
+/// Cargo will use this in arguments to rustc, like `--cfg CFG`.
 pub fn emit(cfg: &str) {
     println!("cargo:rustc-cfg={}", cfg);
+}
+
+/// Writes a line telling Cargo to rerun the build script if `path` changes.
+///
+/// This looks like: `cargo:rerun-if-changed=PATH`
+///
+/// This requires at least cargo 0.7.0, corresponding to rustc 1.6.0.  Earlier
+/// versions of cargo will simply ignore the directive.
+pub fn rerun_path(path: &str) {
+    println!("cargo:rerun-if-changed={}", path);
+}
+
+/// Writes a line telling Cargo to rerun the build script if the environment
+/// variable `var` changes.
+///
+/// This looks like: `cargo:rerun-if-env-changed=VAR`
+///
+/// This requires at least cargo 0.21.0, corresponding to rustc 1.20.0.  Earlier
+/// versions of cargo will simply ignore the directive.
+pub fn rerun_env(var: &str) {
+    println!("cargo:rerun-if-env-changed={}", var);
 }
 
 /// Create a new `AutoCfg` instance.

@@ -31,7 +31,7 @@ fn main() {
     ac.emit_has_type("i128");
 
     // (optional) We don't need to rerun for anything external.
-    println!("cargo:rerun-if-changed=build.rs");
+    autocfg::rerun_path(file!());
 }
 ```
 
@@ -39,6 +39,13 @@ If the type test succeeds, this will write a `cargo:rustc-cfg=has_i128` line
 for Cargo, which translates to Rust arguments `--cfg has_i128`.  Then in the
 rest of your Rust code, you can add `#[cfg(has_i128)]` conditions on code that
 should only be used when the compiler supports it.
+
+
+## Release Notes
+
+- 0.1.2 (2018-01-16)
+  - Add `rerun_env(ENV)` to print `cargo:rerun-if-env-changed=ENV`
+  - Add `rerun_path(PATH)` to print `cargo:rerun-if-changed=PATH`
 
 
 ## Minimum Rust version policy
