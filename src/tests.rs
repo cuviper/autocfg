@@ -60,5 +60,5 @@ fn probe_sum() {
 fn probe_int_to_from_bytes() {
     let ac = AutoCfg::with_dir("target").unwrap();
     let missing = !ac.probe_rustc_version(1, 22);
-    assert!(missing ^ ac.probe_method("usize::to_ne_bytes", "fn(usize) -> [u8; 8]"));
+    assert!(missing ^ ac.probe_method("usize::to_ne_bytes", stringify!(fn(usize) -> [u8; 8])));
 }
