@@ -55,3 +55,10 @@ fn probe_sum() {
     assert!(missing ^ ac.probe_trait("std::iter::Sum<i32>"));
     assert!(missing ^ ac.probe_type("std::iter::Sum<i32>"));
 }
+
+#[test]
+fn probe_int_to_from_bytes() {
+    let ac = AutoCfg::with_dir("target").unwrap();
+    let missing = !ac.probe_rustc_version(1, 22);
+    assert!(missing ^ ac.probe_method("usize::to_ne_bytes", "fn(usize) -> [u8; 8]"));
+}

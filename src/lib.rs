@@ -179,14 +179,12 @@ impl AutoCfg {
 
         command.arg("-").stdin(Stdio::piped());
         let mut child = try!(command.spawn().map_err(error::from_io));
-        try!(
-            child
-                .stdin
-                .take()
-                .expect("rustc stdin")
-                .write_all(code.as_ref())
-                .map_err(error::from_io)
-        );
+        try!(child
+            .stdin
+            .take()
+            .expect("rustc stdin")
+            .write_all(code.as_ref())
+            .map_err(error::from_io));
 
         let status = try!(child.wait().map_err(error::from_io));
         Ok(status.success())
@@ -271,6 +269,28 @@ impl AutoCfg {
         }
     }
 
+    /// Tests whether the given method can be used.
+    ///
+    /// The test code is subject to change, but currently looks like:
+    ///
+    /// ```ignore
+    /// pub static PROBE: SIG = METHOD;
+    /// ```
+    pub fn probe_method(&self, name: &str, sig: &str) -> bool {
+        self.probe(format!("pub static PROBE: {} = {};", sig, name))
+            .unwrap_or(false)
+    }
+
+    /// Emits a config value `has_METHOD` if `probe_method` returns true.
+    ///
+    /// Any non-identifier characters in the type `name` will be replaced with
+    /// `_` in the generated config value.
+    pub fn emit_has_method(&self, name: &str, sig: &str) {
+        if self.probe_method(name, sig) {
+            emit(&format!("has_{}", mangle(name)));
+        }
+    }
+
     /// Emits the given `cfg` value if `probe_type` returns true.
     pub fn emit_type_cfg(&self, name: &str, cfg: &str) {
         if self.probe_type(name) {
@@ -284,5 +304,6 @@ fn mangle(s: &str) -> String {
         .map(|c| match c {
             'A'...'Z' | 'a'...'z' | '0'...'9' => c,
             _ => '_',
-        }).collect()
+        })
+        .collect()
 }
