@@ -274,11 +274,12 @@ impl AutoCfg {
     /// The test code is subject to change, but currently looks like:
     ///
     /// ```ignore
-    /// pub static PROBE: SIG = METHOD;
+    /// pub fn probe() {
+    ///     let _: SIG = METHOD;
+    /// }
     /// ```
     pub fn probe_method(&self, name: &str, sig: &str) -> bool {
-        self.probe(format!("pub static PROBE: {} = {};", sig, name))
-            .unwrap_or(false)
+        self.probe_expr(name, sig)
     }
 
     /// Emits a config value `has_METHOD` if `probe_method` returns true.
@@ -289,6 +290,20 @@ impl AutoCfg {
         if self.probe_method(name, sig) {
             emit(&format!("has_{}", mangle(name)));
         }
+    }
+
+    /// Tests whether the given expression can be used.
+    ///
+    /// The test code is subject to change, but currently looks like:
+    ///
+    /// ```ignore
+    /// pub fn probe() {
+    ///     let _: TYPE = EXPR;
+    /// }
+    /// ```
+    pub fn probe_expr(&self, expr: &str, ty: &str) -> bool {
+        self.probe(format!("pub fn probe() {{ let _: {} = {}; }}", ty, expr))
+            .unwrap_or(false)
     }
 
     /// Emits the given `cfg` value if `probe_type` returns true.

@@ -62,3 +62,16 @@ fn probe_int_to_from_bytes() {
     let missing = !ac.probe_rustc_version(1, 32);
     assert!(missing ^ ac.probe_method("usize::to_ne_bytes", stringify!(fn(usize) -> [u8; 8])));
 }
+
+#[test]
+fn probe_expr() {
+    let ac = AutoCfg::with_dir("target").unwrap();
+    let missing = !ac.probe_rustc_version(1, 13);
+    assert!(
+        missing
+            ^ ac.probe_expr(
+                stringify!(|| Ok(std::env::current_dir()?)),
+                stringify!(fn() -> std::io::Result<std::path::PathBuf>)
+            )
+    );
+}
