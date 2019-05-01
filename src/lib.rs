@@ -37,6 +37,13 @@
 #![deny(missing_debug_implementations)]
 #![deny(missing_docs)]
 
+#[cfg(test)]
+#[macro_use]
+extern crate doc_comment;
+
+#[cfg(test)]
+doctest!("../README.md");
+
 use std::env;
 use std::ffi::OsString;
 use std::fs;

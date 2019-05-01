@@ -23,7 +23,7 @@ autocfg = "0.1"
 Then use it in your `build.rs` script to detect compiler features.  For
 example, to test for 128-bit integer support, it might look like:
 
-```rust
+```rust,no_run
 extern crate autocfg;
 
 fn main() {

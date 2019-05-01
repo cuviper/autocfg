@@ -9,4 +9,5 @@ readme = "README.md"
 keywords = ["rustc", "build", "autoconf"]
 categories = ["development-tools::build-utils"]
 
-[dependencies]
+[dev-dependencies]
+doc-comment = "0.3"
