@@ -21,6 +21,12 @@ matrix:
         - rustup target add $TARGET
       script:
         - cargo test --verbose --lib -- no_std
+    - name: "rustfmt"
+      rust: 1.31.0
+      before_script:
+        - rustup component add rustfmt
+      script:
+        - cargo fmt --all -- --check
 
 notifications:
   email:

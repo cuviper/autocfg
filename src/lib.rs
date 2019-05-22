@@ -296,5 +296,6 @@ fn mangle(s: &str) -> String {
         .map(|c| match c {
             'A'...'Z' | 'a'...'z' | '0'...'9' => c,
             _ => '_',
-        }).collect()
+        })
+        .collect()
 }
