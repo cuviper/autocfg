@@ -40,7 +40,7 @@
 use std::env;
 use std::ffi::OsString;
 use std::fs;
-use std::io::Write;
+use std::io::{stderr, Write};
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 #[allow(deprecated)]
@@ -150,10 +150,13 @@ impl AutoCfg {
         };
 
         // Sanity check with and without `std`.
-        if !try!(ac.probe("")) {
+        if !ac.probe("").unwrap_or(false) {
             ac.no_std = true;
-            if !try!(ac.probe("")) {
-                return Err(error::from_str("could not probe for `std`"));
+            if !ac.probe("").unwrap_or(false) {
+                // Neither worked, so assume nothing...
+                ac.no_std = false;
+                let warning = b"warning: autocfg could not probe for `std`\n";
+                stderr().write_all(warning).ok();
             }
         }
         Ok(ac)
@@ -180,7 +183,8 @@ impl AutoCfg {
         let id = ID.fetch_add(1, Ordering::Relaxed);
         let mut command = Command::new(&self.rustc);
         command
-            .arg(format!("--crate-name=probe{}", id))
+            .arg("--crate-name")
+            .arg(format!("probe{}", id))
             .arg("--crate-type=lib")
             .arg("--out-dir")
             .arg(&self.out_dir)

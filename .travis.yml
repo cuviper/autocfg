@@ -21,6 +21,12 @@ matrix:
         - rustup target add $TARGET
       script:
         - cargo test --verbose --lib -- no_std
+    # we don't even need an installed target for version checks
+    - name: "missing_target"
+      rust: stable
+      env: TARGET=thumbv6m-none-eabi
+      script:
+        - cargo test --verbose --lib -- version
     - name: "rustfmt"
       rust: 1.31.0
       before_script:
