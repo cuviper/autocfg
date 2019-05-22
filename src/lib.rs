@@ -43,6 +43,9 @@ use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
+#[allow(deprecated)]
+use std::sync::atomic::ATOMIC_USIZE_INIT;
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 mod error;
 pub use error::Error;
@@ -160,8 +163,7 @@ impl AutoCfg {
     }
 
     fn probe<T: AsRef<[u8]>>(&self, code: T) -> Result<bool, Error> {
-        use std::sync::atomic::{AtomicUsize, Ordering, ATOMIC_USIZE_INIT};
-
+        #[allow(deprecated)]
         static ID: AtomicUsize = ATOMIC_USIZE_INIT;
 
         let id = ID.fetch_add(1, Ordering::Relaxed);
