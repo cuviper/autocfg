@@ -150,14 +150,13 @@ impl AutoCfg {
         };
 
         // Sanity check with and without `std`.
-        if !try!(ac.probe("")) {
+        if !ac.probe("").unwrap_or(false) {
             ac.no_std = true;
-            if !try!(ac.probe("")) {
+            if !ac.probe("").unwrap_or(false) {
                 // Neither worked, so assume nothing...
                 ac.no_std = false;
-                stderr()
-                    .write_all(b"warning: autocfg could not probe for `std`")
-                    .ok();
+                let warning = b"warning: autocfg could not probe for `std`\n";
+                stderr().write_all(warning).ok();
             }
         }
         Ok(ac)
