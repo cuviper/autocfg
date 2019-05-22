@@ -40,7 +40,7 @@
 use std::env;
 use std::ffi::OsString;
 use std::fs;
-use std::io::Write;
+use std::io::{stderr, Write};
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 #[allow(deprecated)]
@@ -153,7 +153,11 @@ impl AutoCfg {
         if !try!(ac.probe("")) {
             ac.no_std = true;
             if !try!(ac.probe("")) {
-                return Err(error::from_str("could not probe for `std`"));
+                // Neither worked, so assume nothing...
+                ac.no_std = false;
+                stderr()
+                    .write_all(b"warning: autocfg could not probe for `std`")
+                    .ok();
             }
         }
         Ok(ac)
