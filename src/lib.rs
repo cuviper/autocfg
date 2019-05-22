@@ -184,7 +184,8 @@ impl AutoCfg {
         let id = ID.fetch_add(1, Ordering::Relaxed);
         let mut command = Command::new(&self.rustc);
         command
-            .arg(format!("--crate-name=probe{}", id))
+            .arg("--crate-name")
+            .arg(format!("probe{}", id))
             .arg("--crate-type=lib")
             .arg("--out-dir")
             .arg(&self.out_dir)
