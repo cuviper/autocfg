@@ -43,6 +43,9 @@ should only be used when the compiler supports it.
 
 ## Release Notes
 
+- 0.1.3 (2019-05-21)
+  - Auto-detects if `#![no_std]` is needed for the `$TARGET`
+
 - 0.1.2 (2018-01-16)
   - Add `rerun_env(ENV)` to print `cargo:rerun-if-env-changed=ENV`
   - Add `rerun_path(PATH)` to print `cargo:rerun-if-changed=PATH`
