@@ -55,3 +55,11 @@ fn probe_sum() {
     assert!(missing ^ ac.probe_trait("std::iter::Sum<i32>"));
     assert!(missing ^ ac.probe_type("std::iter::Sum<i32>"));
 }
+
+#[test]
+fn probe_no_std() {
+    let ac = AutoCfg::with_dir("target").unwrap();
+    assert!(ac.probe_type("i32"));
+    assert!(ac.probe_type("[i32]"));
+    assert_eq!(ac.probe_type("Vec<i32>"), !ac.no_std);
+}

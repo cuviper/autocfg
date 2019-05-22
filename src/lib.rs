@@ -63,6 +63,7 @@ pub struct AutoCfg {
     rustc: PathBuf,
     rustc_version: Version,
     target: Option<OsString>,
+    no_std: bool,
 }
 
 /// Writes a config flag for rustc on standard out.
@@ -140,12 +141,22 @@ impl AutoCfg {
             return Err(error::from_str("output path is not a writable directory"));
         }
 
-        Ok(AutoCfg {
+        let mut ac = AutoCfg {
             out_dir: dir,
             rustc: rustc,
             rustc_version: rustc_version,
             target: env::var_os("TARGET"),
-        })
+            no_std: false,
+        };
+
+        // Sanity check with and without `std`.
+        if !try!(ac.probe("")) {
+            ac.no_std = true;
+            if !try!(ac.probe("")) {
+                return Err(error::from_str("could not probe for `std`"));
+            }
+        }
+        Ok(ac)
     }
 
     /// Test whether the current `rustc` reports a version greater than
@@ -181,14 +192,13 @@ impl AutoCfg {
 
         command.arg("-").stdin(Stdio::piped());
         let mut child = try!(command.spawn().map_err(error::from_io));
-        try!(
-            child
-                .stdin
-                .take()
-                .expect("rustc stdin")
-                .write_all(code.as_ref())
-                .map_err(error::from_io)
-        );
+        let mut stdin = child.stdin.take().expect("rustc stdin");
+
+        if self.no_std {
+            try!(stdin.write_all(b"#![no_std]\n").map_err(error::from_io));
+        }
+        try!(stdin.write_all(code.as_ref()).map_err(error::from_io));
+        drop(stdin);
 
         let status = try!(child.wait().map_err(error::from_io));
         Ok(status.success())

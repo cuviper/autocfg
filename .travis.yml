@@ -6,9 +6,21 @@ rust:
   - 1.15.0
   - 1.20.0
   - 1.25.0
+  - 1.30.0
   - stable
   - beta
   - nightly
+
+matrix:
+  include:
+    # try probing a target that doesn't have std at all
+    - name: "no_std"
+      rust: stable
+      env: TARGET=thumbv6m-none-eabi
+      before_script:
+        - rustup target add $TARGET
+      script:
+        - cargo test --verbose --lib -- no_std
 
 notifications:
   email:
