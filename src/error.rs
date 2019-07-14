@@ -15,7 +15,7 @@ impl error::Error for Error {
         "AutoCfg error"
     }
 
-    fn cause(&self) -> Option<&error::Error> {
+    fn cause(&self) -> Option<&dyn error::Error> {
         match self.kind {
             ErrorKind::Io(ref e) => Some(e),
             ErrorKind::Num(ref e) => Some(e),

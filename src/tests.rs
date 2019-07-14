@@ -27,7 +27,7 @@ fn probe_add() {
     assert!(ac.probe_trait("std::ops::Add"));
     assert!(ac.probe_trait("std::ops::Add<i32>"));
     assert!(ac.probe_trait("std::ops::Add<i32, Output = i32>"));
-    assert!(ac.probe_type("std::ops::Add<i32, Output = i32>"));
+    assert!(ac.probe_type("dyn std::ops::Add<i32, Output = i32>"));
 }
 
 #[test]
@@ -35,7 +35,7 @@ fn probe_as_ref() {
     let ac = AutoCfg::with_dir("target").unwrap();
     assert!(ac.probe_path("std::convert::AsRef"));
     assert!(ac.probe_trait("std::convert::AsRef<str>"));
-    assert!(ac.probe_type("std::convert::AsRef<str>"));
+    assert!(ac.probe_type("dyn std::convert::AsRef<str>"));
 }
 
 #[test]
@@ -53,7 +53,7 @@ fn probe_sum() {
     assert!(missing ^ ac.probe_path("std::iter::Sum"));
     assert!(missing ^ ac.probe_trait("std::iter::Sum"));
     assert!(missing ^ ac.probe_trait("std::iter::Sum<i32>"));
-    assert!(missing ^ ac.probe_type("std::iter::Sum<i32>"));
+    assert!(missing ^ ac.probe_type("dyn std::iter::Sum<i32>"));
 }
 
 #[test]
