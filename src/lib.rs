@@ -36,6 +36,10 @@
 
 #![deny(missing_debug_implementations)]
 #![deny(missing_docs)]
+// allow future warnings that can't be fixed while keeping 1.0 compatibility
+#![allow(unknown_lints)]
+#![allow(bare_trait_objects)]
+#![allow(ellipsis_inclusive_range_patterns)]
 
 use std::env;
 use std::ffi::OsString;
