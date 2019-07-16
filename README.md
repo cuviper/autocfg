@@ -43,6 +43,9 @@ should only be used when the compiler supports it.
 
 ## Release Notes
 
+- 0.1.5 (2019-07-16)
+  - Mask some warnings from newer rustc.
+
 - 0.1.4 (2019-05-22)
   - Relax `std`/`no_std` probing to a warning instead of an error.
   - Improve `rustc` bootstrap compatibility.
