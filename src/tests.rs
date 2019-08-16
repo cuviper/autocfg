@@ -57,6 +57,25 @@ fn probe_sum() {
 }
 
 #[test]
+fn probe_std() {
+    let ac = AutoCfg::with_dir("target").unwrap();
+    assert_eq!(ac.probe_sysroot_crate("std"), !ac.no_std);
+}
+
+#[test]
+fn probe_alloc() {
+    let ac = AutoCfg::with_dir("target").unwrap();
+    let missing = !ac.probe_rustc_version(1, 36);
+    assert!(missing ^ ac.probe_sysroot_crate("alloc"));
+}
+
+#[test]
+fn probe_bad_sysroot_crate() {
+    let ac = AutoCfg::with_dir("target").unwrap();
+    assert!(!ac.probe_sysroot_crate("doesnt_exist"));
+}
+
+#[test]
 fn probe_no_std() {
     let ac = AutoCfg::with_dir("target").unwrap();
     assert!(ac.probe_type("i32"));
