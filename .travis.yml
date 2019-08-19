@@ -21,7 +21,7 @@ matrix:
       before_script:
         - rustup target add $TARGET
       script:
-        - cargo test --verbose --lib -- no_std
+        - cargo test --verbose --lib
     # we don't even need an installed target for version checks
     - name: "missing_target"
       rust: stable
