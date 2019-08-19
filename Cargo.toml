@@ -1,6 +1,6 @@
 [package]
 name = "autocfg"
-version = "0.1.5"
+version = "0.1.6"
 authors = ["Josh Stone <cuviper@gmail.com>"]
 license = "Apache-2.0/MIT"
 repository = "https://github.com/cuviper/autocfg"

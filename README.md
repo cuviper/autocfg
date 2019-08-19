@@ -43,6 +43,9 @@ should only be used when the compiler supports it.
 
 ## Release Notes
 
+- 0.1.6 (2019-08-19)
+  - Add `probe`/`emit_sysroot_crate`, by @leo60228
+
 - 0.1.5 (2019-07-16)
   - Mask some warnings from newer rustc.
 
