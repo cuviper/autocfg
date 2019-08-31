@@ -194,6 +194,15 @@ impl AutoCfg {
             .arg(&self.out_dir)
             .arg("--emit=llvm-ir");
 
+        if let Ok(a) = std::env::var("RUSTFLAGS") {
+            command.args(&a
+                         .split(' ')
+                         .map(str::trim)
+                         .filter(|s| !s.is_empty())
+                         .map(str::to_string)
+                         .collect::<Vec<String>>());
+        }
+
         if let Some(target) = self.target.as_ref() {
             command.arg("--target").arg(target);
         }
