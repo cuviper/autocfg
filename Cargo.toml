@@ -10,3 +10,4 @@ keywords = ["rustc", "build", "autoconf"]
 categories = ["development-tools::build-utils"]
 
 [dependencies]
+shlex = "0.1.1"

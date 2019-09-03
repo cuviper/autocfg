@@ -41,6 +41,9 @@
 #![allow(bare_trait_objects)]
 #![allow(ellipsis_inclusive_range_patterns)]
 
+extern crate shlex;
+
+use shlex::Shlex;
 use std::env;
 use std::ffi::OsString;
 use std::fs;
@@ -67,6 +70,7 @@ pub struct AutoCfg {
     rustc: PathBuf,
     rustc_version: Version,
     target: Option<OsString>,
+    rustflags: Option<OsString>,
     no_std: bool,
 }
 
@@ -150,6 +154,7 @@ impl AutoCfg {
             rustc: rustc,
             rustc_version: rustc_version,
             target: env::var_os("TARGET"),
+            rustflags: env::var_os("RUSTFLAGS"),
             no_std: false,
         };
 
@@ -196,6 +201,14 @@ impl AutoCfg {
 
         if let Some(target) = self.target.as_ref() {
             command.arg("--target").arg(target);
+        }
+
+        if let Some(rustflags) = self.rustflags.as_ref() {
+            if let Some(rustflags_str) = rustflags.as_os_str().to_str() {
+                let rustflags_args: Vec<OsString> =
+                    Shlex::new(rustflags_str).map(|x| x.into()).collect();
+                command.args(&rustflags_args);
+            }
         }
 
         command.arg("-").stdin(Stdio::piped());
