@@ -147,13 +147,14 @@ impl AutoCfg {
         }
 
         // Recover the RUSTFLAGS
-        let rustflags = std::env::var("RUSTFLAGS").ok().map(|rustflags|
+        let rustflags = std::env::var("RUSTFLAGS").ok().map(|rustflags| {
             rustflags
                 .split(' ')
                 .map(str::trim)
                 .filter(|s| !s.is_empty())
                 .map(str::to_string)
-                .collect::<Vec<String>>());
+                .collect::<Vec<String>>()
+        });
 
         let mut ac = AutoCfg {
             out_dir: dir,
@@ -161,7 +162,7 @@ impl AutoCfg {
             rustc_version: rustc_version,
             target: env::var_os("TARGET"),
             no_std: false,
-            rustflags: rustflags
+            rustflags: rustflags,
         };
 
         // Sanity check with and without `std`.
