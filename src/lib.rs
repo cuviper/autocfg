@@ -206,7 +206,7 @@ impl AutoCfg {
             .arg(&self.out_dir)
             .arg("--emit=llvm-ir");
 
-        if let Some(ref rustflags) = &self.rustflags {
+        if let &Some(ref rustflags) = &self.rustflags {
             command.args(rustflags);
         }
 
