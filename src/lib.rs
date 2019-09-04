@@ -68,6 +68,7 @@ pub struct AutoCfg {
     rustc_version: Version,
     target: Option<OsString>,
     no_std: bool,
+    rustflags: Option<Vec<String>>,
 }
 
 /// Writes a config flag for rustc on standard out.
@@ -145,12 +146,22 @@ impl AutoCfg {
             return Err(error::from_str("output path is not a writable directory"));
         }
 
+        // Recover the RUSTFLAGS
+        let rustflags = std::env::var("RUSTFLAGS").ok().map(|rustflags|
+            rustflags
+                .split(' ')
+                .map(str::trim)
+                .filter(|s| !s.is_empty())
+                .map(str::to_string)
+                .collect::<Vec<String>>());
+
         let mut ac = AutoCfg {
             out_dir: dir,
             rustc: rustc,
             rustc_version: rustc_version,
             target: env::var_os("TARGET"),
             no_std: false,
+            rustflags: rustflags
         };
 
         // Sanity check with and without `std`.
@@ -194,13 +205,8 @@ impl AutoCfg {
             .arg(&self.out_dir)
             .arg("--emit=llvm-ir");
 
-        if let Ok(a) = std::env::var("RUSTFLAGS") {
-            command.args(&a
-                         .split(' ')
-                         .map(str::trim)
-                         .filter(|s| !s.is_empty())
-                         .map(str::to_string)
-                         .collect::<Vec<String>>());
+        if let Some(ref rustflags) = &self.rustflags {
+            command.args(rustflags);
         }
 
         if let Some(target) = self.target.as_ref() {
