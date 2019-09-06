@@ -146,15 +146,26 @@ impl AutoCfg {
             return Err(error::from_str("output path is not a writable directory"));
         }
 
-        // Recover the RUSTFLAGS
-        let rustflags = std::env::var("RUSTFLAGS").ok().map(|rustflags| {
-            rustflags
-                .split(' ')
-                .map(str::trim)
-                .filter(|s| !s.is_empty())
-                .map(str::to_string)
-                .collect::<Vec<String>>()
-        });
+        // Cargo only applies RUSTFLAGS for building TARGET artifact in
+        // cross-compilation environment. Sadly, we don't have a way to detect
+        // when we're building HOST artifact in a cross-compilation environment,
+        // so for now we only apply RUSTFLAGS when cross-compiling an artifact.
+        //
+        // See https://github.com/cuviper/autocfg/pull/10#issuecomment-527575030.
+        let rustflags = env::var("RUSTFLAGS")
+            .ok()
+            .filter(|_| env::var_os("TARGET") != env::var_os("HOST"))
+            .map(|rustflags| {
+                // This is meant to match how cargo handles the RUSTFLAG environment
+                // variable.
+                // See https://github.com/rust-lang/cargo/blob/69aea5b6f69add7c51cca939a79644080c0b0ba0/src/cargo/core/compiler/build_context/target_info.rs#L434-L441
+                rustflags
+                    .split(' ')
+                    .map(str::trim)
+                    .filter(|s| !s.is_empty())
+                    .map(str::to_string)
+                    .collect::<Vec<String>>()
+            });
 
         let mut ac = AutoCfg {
             out_dir: dir,
