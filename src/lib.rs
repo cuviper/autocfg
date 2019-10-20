@@ -41,6 +41,16 @@
 #![allow(bare_trait_objects)]
 #![allow(ellipsis_inclusive_range_patterns)]
 
+/// Local macro to avoid `std::try!`, deprecated in Rust 1.39.
+macro_rules! try {
+    ($result:expr) => {
+        match $result {
+            Ok(value) => value,
+            Err(error) => return Err(error),
+        }
+    };
+}
+
 use std::env;
 use std::ffi::OsString;
 use std::fs;
@@ -68,6 +78,7 @@ pub struct AutoCfg {
     rustc_version: Version,
     target: Option<OsString>,
     no_std: bool,
+    rustflags: Option<Vec<String>>,
 }
 
 /// Writes a config flag for rustc on standard out.
@@ -145,12 +156,35 @@ impl AutoCfg {
             return Err(error::from_str("output path is not a writable directory"));
         }
 
+        // Cargo only applies RUSTFLAGS for building TARGET artifact in
+        // cross-compilation environment. Sadly, we don't have a way to detect
+        // when we're building HOST artifact in a cross-compilation environment,
+        // so for now we only apply RUSTFLAGS when cross-compiling an artifact.
+        //
+        // See https://github.com/cuviper/autocfg/pull/10#issuecomment-527575030.
+        let rustflags = if env::var_os("TARGET") != env::var_os("HOST") {
+            env::var("RUSTFLAGS").ok().map(|rustflags| {
+                // This is meant to match how cargo handles the RUSTFLAG environment
+                // variable.
+                // See https://github.com/rust-lang/cargo/blob/69aea5b6f69add7c51cca939a79644080c0b0ba0/src/cargo/core/compiler/build_context/target_info.rs#L434-L441
+                rustflags
+                    .split(' ')
+                    .map(str::trim)
+                    .filter(|s| !s.is_empty())
+                    .map(str::to_string)
+                    .collect::<Vec<String>>()
+            })
+        } else {
+            None
+        };
+
         let mut ac = AutoCfg {
             out_dir: dir,
             rustc: rustc,
             rustc_version: rustc_version,
             target: env::var_os("TARGET"),
             no_std: false,
+            rustflags: rustflags,
         };
 
         // Sanity check with and without `std`.
@@ -193,6 +227,10 @@ impl AutoCfg {
             .arg("--out-dir")
             .arg(&self.out_dir)
             .arg("--emit=llvm-ir");
+
+        if let &Some(ref rustflags) = &self.rustflags {
+            command.args(rustflags);
+        }
 
         if let Some(target) = self.target.as_ref() {
             command.arg("--target").arg(target);
