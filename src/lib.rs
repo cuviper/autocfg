@@ -152,10 +152,8 @@ impl AutoCfg {
         // so for now we only apply RUSTFLAGS when cross-compiling an artifact.
         //
         // See https://github.com/cuviper/autocfg/pull/10#issuecomment-527575030.
-        let rustflags = env::var("RUSTFLAGS")
-            .ok()
-            .filter(|_| env::var_os("TARGET") != env::var_os("HOST"))
-            .map(|rustflags| {
+        let rustflags = if env::var_os("TARGET") != env::var_os("HOST") {
+            env::var("RUSTFLAGS").ok().map(|rustflags| {
                 // This is meant to match how cargo handles the RUSTFLAG environment
                 // variable.
                 // See https://github.com/rust-lang/cargo/blob/69aea5b6f69add7c51cca939a79644080c0b0ba0/src/cargo/core/compiler/build_context/target_info.rs#L434-L441
@@ -165,7 +163,10 @@ impl AutoCfg {
                     .filter(|s| !s.is_empty())
                     .map(str::to_string)
                     .collect::<Vec<String>>()
-            });
+            })
+        } else {
+            None
+        };
 
         let mut ac = AutoCfg {
             out_dir: dir,
