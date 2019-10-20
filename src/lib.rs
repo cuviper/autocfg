@@ -41,6 +41,16 @@
 #![allow(bare_trait_objects)]
 #![allow(ellipsis_inclusive_range_patterns)]
 
+/// Local macro to avoid `std::try!`, deprecated in Rust 1.39.
+macro_rules! try {
+    ($result:expr) => {
+        match $result {
+            Ok(value) => value,
+            Err(error) => return Err(error),
+        }
+    };
+}
+
 use std::env;
 use std::ffi::OsString;
 use std::fs;
