@@ -43,6 +43,9 @@ should only be used when the compiler supports it.
 
 ## Release Notes
 
+- 0.1.7 (2019-10-20)
+  - Apply `RUSTFLAGS` when probing `$TARGET != $HOST`, mainly for sysroot, by @roblabla.
+
 - 0.1.6 (2019-08-19)
   - Add `probe`/`emit_sysroot_crate`, by @leo60228
 
