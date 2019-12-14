@@ -33,6 +33,14 @@
 //! for Cargo, which translates to Rust arguments `--cfg has_i128`.  Then in the
 //! rest of your Rust code, you can add `#[cfg(has_i128)]` conditions on code that
 //! should only be used when the compiler supports it.
+//!
+//! ## Caution
+//!
+//! Many of the probing methods of `AutoCfg` document the particular template they
+//! use, **subject to change**. The inputs are not validated to make sure they are
+//! semantically correct for their expected use, so it's _possible_ to escape and
+//! inject something unintended. However, such abuse is unsupported and will not
+//! be considered when making changes to the templates.
 
 #![deny(missing_debug_implementations)]
 #![deny(missing_docs)]
