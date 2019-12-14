@@ -362,6 +362,44 @@ impl AutoCfg {
             emit(cfg);
         }
     }
+
+    /// Tests whether the given expression can be used.
+    ///
+    /// The test code is subject to change, but currently looks like:
+    ///
+    /// ```ignore
+    /// pub fn probe() { let _ = EXPR; }
+    /// ```
+    pub fn probe_expression(&self, expr: &str) -> bool {
+        self.probe(format!("pub fn probe() {{ let _ = {}; }}", expr))
+            .unwrap_or(false)
+    }
+
+    /// Emits the given `cfg` value if `probe_expression` returns true.
+    pub fn emit_expression_cfg(&self, expr: &str, cfg: &str) {
+        if self.probe_expression(expr) {
+            emit(cfg);
+        }
+    }
+
+    /// Tests whether the given constant expression can be used.
+    ///
+    /// The test code is subject to change, but currently looks like:
+    ///
+    /// ```ignore
+    /// pub const PROBE: () = ((), EXPR).0;
+    /// ```
+    pub fn probe_constant(&self, expr: &str) -> bool {
+        self.probe(format!("pub const PROBE: () = ((), {}).0;", expr))
+            .unwrap_or(false)
+    }
+
+    /// Emits the given `cfg` value if `probe_constant` returns true.
+    pub fn emit_constant_cfg(&self, expr: &str, cfg: &str) {
+        if self.probe_constant(expr) {
+            emit(cfg);
+        }
+    }
 }
 
 fn mangle(s: &str) -> String {

@@ -107,3 +107,19 @@ fn probe_no_std() {
     assert!(ac.probe_type("[i32]"));
     ac.assert_std(ac.probe_type("Vec<i32>"));
 }
+
+#[test]
+fn probe_expression() {
+    let ac = AutoCfg::with_dir("target").unwrap();
+    assert!(ac.probe_expression(r#""test".trim_left()"#));
+    ac.assert_min(1, 30, ac.probe_expression(r#""test".trim_start()"#));
+    ac.assert_std(ac.probe_expression("[1, 2, 3].to_vec()"));
+}
+
+#[test]
+fn probe_constant() {
+    let ac = AutoCfg::with_dir("target").unwrap();
+    assert!(ac.probe_constant("1 + 2 + 3"));
+    ac.assert_min(1, 33, ac.probe_constant("{ let x = 1 + 2 + 3; x * x }"));
+    ac.assert_min(1, 39, ac.probe_constant(r#""test".len()"#));
+}
