@@ -17,7 +17,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [build-dependencies]
-autocfg = "0.1"
+autocfg = "1"
 ```
 
 Then use it in your `build.rs` script to detect compiler features.  For
