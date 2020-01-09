@@ -1,8 +1,8 @@
 [package]
 name = "autocfg"
-version = "0.1.7"
+version = "1.0.0"
 authors = ["Josh Stone <cuviper@gmail.com>"]
-license = "Apache-2.0/MIT"
+license = "Apache-2.0 OR MIT"
 repository = "https://github.com/cuviper/autocfg"
 description = "Automatic cfg for Rust compiler features"
 readme = "README.md"
