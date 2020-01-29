@@ -1,0 +1,17 @@
+status = [
+  "Test (1.0.0)",
+  "Test (1.5.0)",
+  "Test (1.10.0)",
+  "Test (1.15.0)",
+  "Test (1.20.0)",
+  "Test (1.25.0)",
+  "Test (1.30.0)",
+  "Test (1.35.0)",
+  "Test (1.40.0)",
+  "Test (stable)",
+  "Test (beta)",
+  "Test (nightly)",
+  "No Std",
+  "Missing Target",
+  "Format",
+]

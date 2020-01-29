@@ -1,0 +1,98 @@
+name: CI
+on:
+  push:
+    branches:
+      - master
+      - staging
+      - trying
+
+jobs:
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [1.0.0, 1.5.0, 1.10.0, 1.15.0, 1.20.0, 1.25.0, 1.30.0, 1.35.0,
+               1.40.0, stable, beta, nightly]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          profile: minimal
+          override: true
+      - name: Build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --verbose
+      - name: Test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --verbose
+
+  # try probing a target that doesn't have std at all
+  no_std:
+    name: No Std
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Install
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: thumbv6m-none-eabi
+          profile: minimal
+          override: true
+      - name: Test
+        env:
+          TARGET: thumbv6m-none-eabi
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --verbose --lib
+
+  # we don't even need an installed target for version checks
+  missing_target:
+    name: Missing Target
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Install
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+      - name: Test
+        env:
+          TARGET: thumbv6m-none-eabi
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --verbose --lib -- version
+
+  fmt:
+    name: Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: 1.40.0
+          override: true
+          components: rustfmt
+      - name: Check formatting
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
