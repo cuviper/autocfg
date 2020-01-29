@@ -4,7 +4,7 @@ autocfg
 [![autocfg crate](https://img.shields.io/crates/v/autocfg.svg)](https://crates.io/crates/autocfg)
 [![autocfg documentation](https://docs.rs/autocfg/badge.svg)](https://docs.rs/autocfg)
 ![minimum rustc 1.0](https://img.shields.io/badge/rustc-1.0+-red.svg)
-![build status](https://github.com/cuviper/autocfg/workflows/Build/badge.svg?branch=master)
+![build status](https://github.com/cuviper/autocfg/workflows/master/badge.svg)
 
 A Rust library for build scripts to automatically configure code based on
 compiler support.  Code snippets are dynamically tested to see if the `rustc`
