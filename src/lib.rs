@@ -157,6 +157,8 @@ impl AutoCfg {
         let rustc: PathBuf = rustc.into();
         let rustc_version = try!(Version::from_rustc(&rustc));
 
+        let target = env::var_os("TARGET");
+
         // Sanity check the output directory
         let dir = dir.into();
         let meta = try!(fs::metadata(&dir).map_err(error::from_io));
@@ -170,7 +172,23 @@ impl AutoCfg {
         // so for now we only apply RUSTFLAGS when cross-compiling an artifact.
         //
         // See https://github.com/cuviper/autocfg/pull/10#issuecomment-527575030.
-        let rustflags = if env::var_os("TARGET") != env::var_os("HOST") {
+        let dir_contains_target = target
+            .as_ref()
+            .and_then(|target| {
+                dir.to_str().and_then(|dir| {
+                    let mut cargo_target_dir = env::var_os("CARGO_TARGET_DIR")
+                        .map(PathBuf::from)
+                        .unwrap_or_else(|| PathBuf::from("target"));
+                    cargo_target_dir.push(target);
+
+                    cargo_target_dir
+                        .to_str()
+                        .map(|cargo_target_dir| dir.contains(&cargo_target_dir))
+                })
+            })
+            .unwrap_or(false);
+
+        let rustflags = if target != env::var_os("HOST") || dir_contains_target {
             env::var("RUSTFLAGS").ok().map(|rustflags| {
                 // This is meant to match how cargo handles the RUSTFLAG environment
                 // variable.
@@ -190,7 +208,7 @@ impl AutoCfg {
             out_dir: dir,
             rustc: rustc,
             rustc_version: rustc_version,
-            target: env::var_os("TARGET"),
+            target: target,
             no_std: false,
             rustflags: rustflags,
         };
