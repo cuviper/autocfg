@@ -172,23 +172,9 @@ impl AutoCfg {
         // so for now we only apply RUSTFLAGS when cross-compiling an artifact.
         //
         // See https://github.com/cuviper/autocfg/pull/10#issuecomment-527575030.
-        let dir_contains_target = target
-            .as_ref()
-            .and_then(|target| {
-                dir.to_str().and_then(|dir| {
-                    let mut cargo_target_dir = env::var_os("CARGO_TARGET_DIR")
-                        .map(PathBuf::from)
-                        .unwrap_or_else(|| PathBuf::from("target"));
-                    cargo_target_dir.push(target);
-
-                    cargo_target_dir
-                        .to_str()
-                        .map(|cargo_target_dir| dir.contains(&cargo_target_dir))
-                })
-            })
-            .unwrap_or(false);
-
-        let rustflags = if target != env::var_os("HOST") || dir_contains_target {
+        let rustflags = if target != env::var_os("HOST")
+            || dir_contains_target(&target, &dir, env::var_os("CARGO_TARGET_DIR"))
+        {
             env::var("RUSTFLAGS").ok().map(|rustflags| {
                 // This is meant to match how cargo handles the RUSTFLAG environment
                 // variable.
@@ -427,4 +413,26 @@ fn mangle(s: &str) -> String {
             _ => '_',
         })
         .collect()
+}
+
+fn dir_contains_target(
+    target: &Option<OsString>,
+    dir: &PathBuf,
+    cargo_target_dir: Option<OsString>,
+) -> bool {
+    target
+        .as_ref()
+        .and_then(|target| {
+            dir.to_str().and_then(|dir| {
+                let mut cargo_target_dir = cargo_target_dir
+                    .map(PathBuf::from)
+                    .unwrap_or_else(|| PathBuf::from("target"));
+                cargo_target_dir.push(target);
+
+                cargo_target_dir
+                    .to_str()
+                    .map(|cargo_target_dir| dir.contains(&cargo_target_dir))
+            })
+        })
+        .unwrap_or(false)
 }
