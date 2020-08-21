@@ -43,6 +43,9 @@ should only be used when the compiler supports it.
 
 ## Release Notes
 
+- 1.0.1 (2020-08-20)
+  - Apply `RUSTFLAGS` for more `--target` scenarios, by @adamreichold.
+
 - 1.0.0 (2020-01-08)
   - 🎉 Release 1.0! 🎉 (no breaking changes)
   - Add `probe_expression` and `emit_expression_cfg` to test arbitrary expressions.

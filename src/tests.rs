@@ -131,3 +131,39 @@ fn probe_constant() {
     ac.assert_min(1, 33, ac.probe_constant("{ let x = 1 + 2 + 3; x * x }"));
     ac.assert_min(1, 39, ac.probe_constant(r#""test".len()"#));
 }
+
+#[test]
+fn dir_does_not_contain_target() {
+    assert!(!super::dir_contains_target(
+        &Some("x86_64-unknown-linux-gnu".into()),
+        &"/project/target/debug/build/project-ea75983148559682/out".into(),
+        None,
+    ));
+}
+
+#[test]
+fn dir_does_contain_target() {
+    assert!(super::dir_contains_target(
+        &Some("x86_64-unknown-linux-gnu".into()),
+        &"/project/target/x86_64-unknown-linux-gnu/debug/build/project-0147aca016480b9d/out".into(),
+        None,
+    ));
+}
+
+#[test]
+fn dir_does_not_contain_target_with_custom_target_dir() {
+    assert!(!super::dir_contains_target(
+        &Some("x86_64-unknown-linux-gnu".into()),
+        &"/project/custom/debug/build/project-ea75983148559682/out".into(),
+        Some("custom".into()),
+    ));
+}
+
+#[test]
+fn dir_does_contain_target_with_custom_target_dir() {
+    assert!(super::dir_contains_target(
+        &Some("x86_64-unknown-linux-gnu".into()),
+        &"/project/custom/x86_64-unknown-linux-gnu/debug/build/project-0147aca016480b9d/out".into(),
+        Some("custom".into()),
+    ));
+}
