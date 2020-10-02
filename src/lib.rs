@@ -119,7 +119,7 @@ pub fn rerun_env(var: &str) {
     println!("cargo:rerun-if-env-changed={}", var);
 }
 
-/// Create a new `AutoCfg` instance.
+/// Creates a new `AutoCfg` instance.
 ///
 /// # Panics
 ///
@@ -129,7 +129,7 @@ pub fn new() -> AutoCfg {
 }
 
 impl AutoCfg {
-    /// Create a new `AutoCfg` instance.
+    /// Creates a new `AutoCfg` instance.
     ///
     /// # Common errors
     ///
@@ -144,7 +144,7 @@ impl AutoCfg {
         }
     }
 
-    /// Create a new `AutoCfg` instance with the specified output directory.
+    /// Creates a new `AutoCfg` instance with the specified output directory.
     ///
     /// # Common errors
     ///
@@ -215,7 +215,7 @@ impl AutoCfg {
         self.no_std = no_std;
     }
 
-    /// Test whether the current `rustc` reports a version greater than
+    /// Tests whether the current `rustc` reports a version greater than
     /// or equal to "`major`.`minor`".
     pub fn probe_rustc_version(&self, major: usize, minor: usize) -> bool {
         self.rustc_version >= Version::new(major, minor, 0)
