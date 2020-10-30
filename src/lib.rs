@@ -125,7 +125,7 @@ pub fn rerun_env(var: &str) {
 ///
 /// Panics if `AutoCfg::new()` returns an error.
 pub fn new() -> AutoCfg {
-    AutoCfg::new().unwrap()
+    AutoCfg::new().unwrap_or_else(|e| panic!("{}", e))
 }
 
 impl AutoCfg {
