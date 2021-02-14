@@ -434,6 +434,23 @@ impl AutoCfg {
             ))
         }
     }
+
+    /// Tests whether `feature` is an available feature gate.
+    pub fn probe_feature(&self, feature: &str) -> bool {
+        if self.probe_rustc_channel(Channel::Nightly) {
+            self.probe(format!("#![feature({})]", mangle(feature))).unwrap_or(false)
+        } else {
+            // Features are only supported on nightly channels.
+            false
+        }
+    }
+
+    /// Emits the given `cfg` if `feature` is an available feature gate.
+    pub fn emit_feature_cfg(&self, feature: &str, cfg: &str) {
+        if self.probe_feature(feature) {
+            emit(cfg)
+        }
+    }
 }
 
 fn mangle(s: &str) -> String {
