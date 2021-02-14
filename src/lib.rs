@@ -466,7 +466,7 @@ impl AutoCfg {
     /// On non-nightly channels this does nothing.
     pub fn set_feature(&mut self, feature: &str) {
         if self.probe_feature(feature) {
-            self.features.insert(feature.to_owned());
+            self.features.insert(mangle(feature));
         }
     }
 
@@ -475,7 +475,7 @@ impl AutoCfg {
     /// This removes `#![feature(<feature>)]` from the start of all probes on nightly `rustc`
     /// channels. If the feature was not set, this does nothing.
     pub fn unset_feature(&mut self, feature: &str) {
-        self.features.remove(feature);
+        self.features.remove(mangle(feature));
     }
 }
 
