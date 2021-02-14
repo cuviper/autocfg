@@ -59,6 +59,7 @@ macro_rules! try {
     };
 }
 
+use std::collections::HashSet;
 use std::env;
 use std::ffi::OsString;
 use std::fs;
@@ -88,6 +89,7 @@ pub struct AutoCfg {
     rustc_channel: Channel,
     target: Option<OsString>,
     no_std: bool,
+    features: HashSet<String>,
     rustflags: Option<Vec<String>>,
 }
 
@@ -199,6 +201,7 @@ impl AutoCfg {
             rustc_channel: rustc_channel,
             target: target,
             no_std: false,
+            features: HashSet::new(),
             rustflags: rustflags,
         };
 
@@ -257,6 +260,9 @@ impl AutoCfg {
 
         if self.no_std {
             try!(stdin.write_all(b"#![no_std]\n").map_err(error::from_io));
+        }
+        for feature in &self.features {
+            try!(stdin.write_all(format!("#![feature({})]\n", feature).as_bytes()).map_err(error::from_io));
         }
         try!(stdin.write_all(code.as_ref()).map_err(error::from_io));
         drop(stdin);
@@ -450,6 +456,26 @@ impl AutoCfg {
         if self.probe_feature(feature) {
             emit(cfg)
         }
+    }
+
+    /// Sets `feature` as a gated feature for all probes.
+    ///
+    /// This adds `#![feature(<feature>)]` at the start of all probes on nightly `rustc` channels.
+    /// Multiple features can be enabled at once. If `feature` is not valid, it is not enabled.
+    ///
+    /// On non-nightly channels this does nothing.
+    pub fn set_feature(&mut self, feature: &str) {
+        if self.probe_feature(feature) {
+            self.features.insert(feature.to_owned());
+        }
+    }
+
+    /// Removes `feature` as a gated feature for all probes, if it is set.
+    ///
+    /// This removes `#![feature(<feature>)]` from the start of all probes on nightly `rustc`
+    /// channels. If the feature was not set, this does nothing.
+    pub fn unset_feature(&mut self, feature: &str) {
+        self.features.remove(feature);
     }
 }
 
