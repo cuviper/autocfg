@@ -412,6 +412,28 @@ impl AutoCfg {
     pub fn rustc_channel(&self) -> Channel {
         self.rustc_channel
     }
+
+    /// Tests whether the current `rustc` [`Channel`] supports the features of the requested
+    /// `channel`.
+    pub fn probe_rustc_channel(&self, channel: Channel) -> bool {
+        self.rustc_channel >= channel
+    }
+
+    /// Emits a `cfg` value of the form `rustc_channel_<channel>, like `rustc_channel_nightly`, if
+    /// the current `rustc` [`Channel`] supports the features of the requested `channel`.
+    pub fn emit_rustc_channel(&self, channel: Channel) {
+        if self.probe_rustc_channel(channel) {
+            emit(&format!(
+                "rustc_channel_{}",
+                match channel {
+                    Channel::Stable => "stable",
+                    Channel::Beta => "beta",
+                    Channel::Nightly => "nightly",
+                    Channel::Dev => "dev",
+                }
+            ))
+        }
+    }
 }
 
 fn mangle(s: &str) -> String {

@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::path::Path;
 use std::process::Command;
 use std::str;
@@ -5,16 +6,32 @@ use std::str;
 use super::{error, Error};
 
 /// The channel the current compiler was released on.
+///
+/// `Channel`s are orderable by their available features. The more features a channel supports, the
+/// higher it is ordered. Specifically, channels are ordered as follows: `Stable < Beta < Nightly <
+/// Dev`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Channel {
     /// Stable channel.
     Stable,
-    /// Beta channel, one release ahead of stable.
+    /// Beta channel.
     Beta,
-    /// Nightly channel, released every night.
+    /// Nightly channel.
     Nightly,
     /// Dev channel.
     Dev,
+}
+
+impl PartialOrd<Channel> for Channel {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        (*self as u8).partial_cmp(&(*other as u8))
+    }
+}
+
+impl Ord for Channel {
+    fn cmp(&self, other: &Self) -> Ordering {
+        (*self as u8).cmp(&(*other as u8))
+    }
 }
 
 /// A version structure for making relative comparisons.

@@ -1,4 +1,5 @@
 use super::AutoCfg;
+use super::Channel;
 use std::env;
 
 impl AutoCfg {
@@ -31,6 +32,12 @@ fn autocfg_version() {
 }
 
 #[test]
+fn autocfg_channel() {
+    let ac = AutoCfg::for_test().unwrap();
+    assert!(ac.probe_rustc_channel(Channel::Stable));
+}
+
+#[test]
 fn version_cmp() {
     use super::version::Version;
     let v123 = Version::new(1, 2, 3);
@@ -41,6 +48,13 @@ fn version_cmp() {
     assert!(Version::new(1, 2, 4) > v123);
     assert!(Version::new(1, 10, 0) > v123);
     assert!(Version::new(2, 0, 0) > v123);
+}
+
+#[test]
+fn channel_cmp() {
+    assert!(Channel::Stable < Channel::Beta);
+    assert!(Channel::Beta < Channel::Nightly);
+    assert!(Channel::Nightly < Channel::Dev);
 }
 
 #[test]
