@@ -73,6 +73,7 @@ mod error;
 pub use error::Error;
 
 mod version;
+pub use version::Channel;
 use version::Version;
 
 #[cfg(test)]
@@ -84,6 +85,7 @@ pub struct AutoCfg {
     out_dir: PathBuf,
     rustc: PathBuf,
     rustc_version: Version,
+    rustc_channel: Channel,
     target: Option<OsString>,
     no_std: bool,
     rustflags: Option<Vec<String>>,
@@ -155,7 +157,7 @@ impl AutoCfg {
     pub fn with_dir<T: Into<PathBuf>>(dir: T) -> Result<Self, Error> {
         let rustc = env::var_os("RUSTC").unwrap_or_else(|| "rustc".into());
         let rustc: PathBuf = rustc.into();
-        let rustc_version = try!(Version::from_rustc(&rustc));
+        let (rustc_version, rustc_channel) = try!(version::version_and_channel_from_rustc(&rustc));
 
         let target = env::var_os("TARGET");
 
@@ -194,6 +196,7 @@ impl AutoCfg {
             out_dir: dir,
             rustc: rustc,
             rustc_version: rustc_version,
+            rustc_channel: rustc_channel,
             target: target,
             no_std: false,
             rustflags: rustflags,
@@ -403,6 +406,11 @@ impl AutoCfg {
         if self.probe_constant(expr) {
             emit(cfg);
         }
+    }
+
+    /// Returns the current `rustc` [`Channel`].
+    pub fn rustc_channel(&self) -> Channel {
+        self.rustc_channel
     }
 }
 
