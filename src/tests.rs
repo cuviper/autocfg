@@ -1,6 +1,6 @@
 use super::AutoCfg;
 use super::Channel;
-use super::Version;
+use super::version::Version;
 use std::env;
 
 impl AutoCfg {
