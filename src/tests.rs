@@ -189,6 +189,17 @@ fn probe_dev() {
 }
 
 #[test]
+fn probe_feature() {
+    let ac = AutoCfg::for_test().unwrap();
+
+    assert!(!ac.probe_feature("nonexistant_feature_abcdefg"));
+    // rust1 is the feature gate for Rust 1.0.
+    ac.assert_on_channel(Channel::Stable, !ac.probe_feature("rust1"));
+    ac.assert_on_channel(Channel::Beta, !ac.probe_feature("rust1"));
+    ac.assert_on_channel(Channel::Nightly, ac.probe_feature("rust1"));
+}
+
+#[test]
 fn dir_does_not_contain_target() {
     assert!(!super::dir_contains_target(
         &Some("x86_64-unknown-linux-gnu".into()),
