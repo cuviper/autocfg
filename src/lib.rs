@@ -475,7 +475,7 @@ impl AutoCfg {
     /// This removes `#![feature(<feature>)]` from the start of all probes on nightly `rustc`
     /// channels. If the feature was not set, this does nothing.
     pub fn unset_feature(&mut self, feature: &str) {
-        self.features.remove(mangle(feature));
+        self.features.remove(&mangle(feature));
     }
 }
 
