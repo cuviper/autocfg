@@ -16,6 +16,12 @@ impl AutoCfg {
         assert_eq!(self.probe_rustc_version(major, minor), probe_result);
     }
 
+    fn assert_on_channel(&self, channel: Channel, probe_result: bool) {
+        if self.rustc_channel == channel {
+            assert!(probe_result);
+        }
+    }
+
     fn for_test() -> Result<Self, super::error::Error> {
         match env::var_os("TESTS_TARGET_DIR") {
             Some(d) => Self::with_dir(d),
@@ -144,6 +150,42 @@ fn probe_constant() {
     assert!(ac.probe_constant("1 + 2 + 3"));
     ac.assert_min(1, 33, ac.probe_constant("{ let x = 1 + 2 + 3; x * x }"));
     ac.assert_min(1, 39, ac.probe_constant(r#""test".len()"#));
+}
+
+#[test]
+fn probe_stable() {
+    let ac = AutoCfg::for_test().unwrap();
+
+    ac.assert_on_channel(Channel::Stable, ac.probe_rustc_channel(Channel::Stable));
+    ac.assert_on_channel(Channel::Beta, ac.probe_rustc_channel(Channel::Stable));
+    ac.assert_on_channel(Channel::Nightly, ac.probe_rustc_channel(Channel::Stable));
+}
+
+#[test]
+fn probe_beta() {
+    let ac = AutoCfg::for_test().unwrap();
+
+    ac.assert_on_channel(Channel::Stable, !ac.probe_rustc_channel(Channel::Beta));
+    ac.assert_on_channel(Channel::Beta, ac.probe_rustc_channel(Channel::Beta));
+    ac.assert_on_channel(Channel::Nightly, ac.probe_rustc_channel(Channel::Beta));
+}
+
+#[test]
+fn probe_nightly() {
+    let ac = AutoCfg::for_test().unwrap();
+
+    ac.assert_on_channel(Channel::Stable, !ac.probe_rustc_channel(Channel::Nightly));
+    ac.assert_on_channel(Channel::Beta, !ac.probe_rustc_channel(Channel::Nightly));
+    ac.assert_on_channel(Channel::Nightly, ac.probe_rustc_channel(Channel::Nightly));
+}
+
+#[test]
+fn probe_dev() {
+    let ac = AutoCfg::for_test().unwrap();
+
+    ac.assert_on_channel(Channel::Stable, !ac.probe_rustc_channel(Channel::Dev));
+    ac.assert_on_channel(Channel::Beta, !ac.probe_rustc_channel(Channel::Dev));
+    ac.assert_on_channel(Channel::Nightly, !ac.probe_rustc_channel(Channel::Dev));
 }
 
 #[test]

@@ -262,7 +262,9 @@ impl AutoCfg {
             try!(stdin.write_all(b"#![no_std]\n").map_err(error::from_io));
         }
         for feature in &self.features {
-            try!(stdin.write_all(format!("#![feature({})]\n", feature).as_bytes()).map_err(error::from_io));
+            try!(stdin
+                .write_all(format!("#![feature({})]\n", feature).as_bytes())
+                .map_err(error::from_io));
         }
         try!(stdin.write_all(code.as_ref()).map_err(error::from_io));
         drop(stdin);
@@ -444,7 +446,8 @@ impl AutoCfg {
     /// Tests whether `feature` is an available feature gate.
     pub fn probe_feature(&self, feature: &str) -> bool {
         if self.probe_rustc_channel(Channel::Nightly) {
-            self.probe(format!("#![feature({})]", mangle(feature))).unwrap_or(false)
+            self.probe(format!("#![feature({})]", mangle(feature)))
+                .unwrap_or(false)
         } else {
             // Features are only supported on nightly channels.
             false
