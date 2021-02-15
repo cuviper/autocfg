@@ -1,5 +1,6 @@
 use super::AutoCfg;
 use super::Channel;
+use super::Version;
 use std::env;
 
 impl AutoCfg {
@@ -45,7 +46,6 @@ fn autocfg_channel() {
 
 #[test]
 fn version_cmp() {
-    use super::version::Version;
     let v123 = Version::new(1, 2, 3);
 
     assert!(Version::new(1, 0, 0) < v123);
@@ -197,6 +197,24 @@ fn probe_feature() {
     ac.assert_on_channel(Channel::Stable, !ac.probe_feature("rust1"));
     ac.assert_on_channel(Channel::Beta, !ac.probe_feature("rust1"));
     ac.assert_on_channel(Channel::Nightly, ac.probe_feature("rust1"));
+}
+
+#[test]
+fn set_feature() {
+    let mut ac = AutoCfg::for_test().unwrap();
+    let step_trait =  ac.core_std("iter::Step");
+
+    ac.set_feature("step_trait");
+    // As of Rust 1.50, the Step trait is experimental and therefore unaccessible on stable. Setting
+    // the feature should not allow access.
+    if ac.rustc_version <= Version::new(1, 50, 0) {
+        ac.assert_on_channel(Channel::Stable, !ac.probe_trait(&step_trait));
+        ac.assert_on_channel(Channel::Beta, !ac.probe_trait(&step_trait));
+    }
+    // The trait should be available on nightly, since the feature is set.
+    ac.assert_on_channel(Channel::Nightly, ac.probe_trait(&step_trait));
+    ac.unset_feature("step_trait");
+    ac.assert_on_channel(Channel::Nightly, !ac.probe_trait(&step_trait));
 }
 
 #[test]
