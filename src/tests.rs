@@ -1,6 +1,6 @@
+use super::version::Version;
 use super::AutoCfg;
 use super::Channel;
-use super::version::Version;
 use std::env;
 
 impl AutoCfg {
@@ -202,7 +202,7 @@ fn probe_feature() {
 #[test]
 fn set_feature() {
     let mut ac = AutoCfg::for_test().unwrap();
-    let step_trait =  ac.core_std("iter::Step");
+    let step_trait = ac.core_std("iter::Step");
 
     ac.set_feature("step_trait");
     // As of Rust 1.50, the Step trait is experimental and therefore unaccessible on stable. Setting
