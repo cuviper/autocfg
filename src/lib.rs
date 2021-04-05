@@ -59,6 +59,7 @@ macro_rules! try {
     };
 }
 
+use std::collections::HashSet;
 use std::env;
 use std::ffi::OsString;
 use std::fs;
@@ -86,6 +87,7 @@ pub struct AutoCfg {
     rustc_version: Version,
     target: Option<OsString>,
     no_std: bool,
+    features: HashSet<String>,
     rustflags: Option<Vec<String>>,
 }
 
@@ -196,6 +198,7 @@ impl AutoCfg {
             rustc_version: rustc_version,
             target: target,
             no_std: false,
+            features: HashSet::new(),
             rustflags: rustflags,
         };
 
@@ -254,6 +257,9 @@ impl AutoCfg {
 
         if self.no_std {
             try!(stdin.write_all(b"#![no_std]\n").map_err(error::from_io));
+        }
+        for feature in &self.features {
+            try!(stdin.write_all(format!("#![feature({})]", feature).as_bytes()).map_err(error::from_io));
         }
         try!(stdin.write_all(code.as_ref()).map_err(error::from_io));
         drop(stdin);
@@ -403,6 +409,22 @@ impl AutoCfg {
         if self.probe_constant(expr) {
             emit(cfg);
         }
+    }
+
+    /// Enables `feature` for all subsequent probes.
+    ///
+    /// This adds `#![feature(<feature>)]` to the start of all probes. Multiple features may be
+    /// enabled at once.
+    pub fn enable_feature(&mut self, feature: &str) {
+        self.features.insert(feature.to_owned());
+    }
+
+    /// Disables `feature` for all subsequent probes.
+    ///
+    /// This removes `#![feature(<feature>)]` from the start of all probes. If `feature` was not
+    /// previously enabled, this has no effect.
+    pub fn disable_feature(&mut self, feature: &str) {
+        self.features.remove(feature);
     }
 }
 

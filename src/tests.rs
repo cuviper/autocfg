@@ -1,5 +1,6 @@
 use super::AutoCfg;
 use std::env;
+use std::process::Command;
 
 impl AutoCfg {
     fn core_std(&self, path: &str) -> String {
@@ -13,6 +14,21 @@ impl AutoCfg {
 
     fn assert_min(&self, major: usize, minor: usize, probe_result: bool) {
         assert_eq!(self.probe_rustc_version(major, minor), probe_result);
+    }
+
+    fn assert_nightly(&self, probe_result: bool) {
+        let output = Command::new(&self.rustc)
+            .args(&["--version", "--verbose"])
+            .output().expect("could not parse rustc channel");
+        if !output.status.success() {
+            panic!("could not execute rustc");
+        }
+        let output = std::str::from_utf8(&output.stdout).expect("rustc version output was not valid utf8");
+        let release = match output.lines().find(|line| line.starts_with("release: ")) {
+            Some(line) => &line["release: ".len()..],
+            None => panic!("could not find rustc release"),
+        };
+        assert_eq!(release.ends_with("nightly"), probe_result);
     }
 
     fn for_test() -> Result<Self, super::error::Error> {
@@ -130,6 +146,17 @@ fn probe_constant() {
     assert!(ac.probe_constant("1 + 2 + 3"));
     ac.assert_min(1, 33, ac.probe_constant("{ let x = 1 + 2 + 3; x * x }"));
     ac.assert_min(1, 39, ac.probe_constant(r#""test".len()"#));
+}
+
+#[test]
+fn features() {
+    let mut ac = AutoCfg::for_test().unwrap();
+    // Enabling features should work only on the nightly channel.
+    ac.enable_feature("step_trait");
+    ac.assert_nightly(ac.probe_trait("std::iter::Step"));
+    // With the feature disabled, probes should again work as normal.
+    ac.disable_feature("step_trait");
+    assert!(ac.probe_type("usize"));
 }
 
 #[test]
