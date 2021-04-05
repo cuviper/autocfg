@@ -1,6 +1,7 @@
 use super::AutoCfg;
 use std::env;
 use std::process::Command;
+use std::str;
 
 impl AutoCfg {
     fn core_std(&self, path: &str) -> String {
@@ -17,15 +18,20 @@ impl AutoCfg {
     }
 
     fn assert_nightly(&self, probe_result: bool) {
-        let output = Command::new(&self.rustc)
+        let output = match Command::new(&self.rustc)
             .args(&["--version", "--verbose"])
             .output()
-            .expect("could not parse rustc channel");
+        {
+            Ok(value) => value,
+            Err(error) => panic!(error),
+        };
         if !output.status.success() {
             panic!("could not execute rustc");
         }
-        let output =
-            std::str::from_utf8(&output.stdout).expect("rustc version output was not valid utf8");
+        let output = match str::from_utf8(&output.stdout) {
+            Ok(value) => value,
+            Err(error) => panic!(error),
+        };
         let release = match output.lines().find(|line| line.starts_with("release: ")) {
             Some(line) => &line["release: ".len()..],
             None => panic!("could not find rustc release"),
