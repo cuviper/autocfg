@@ -19,11 +19,13 @@ impl AutoCfg {
     fn assert_nightly(&self, probe_result: bool) {
         let output = Command::new(&self.rustc)
             .args(&["--version", "--verbose"])
-            .output().expect("could not parse rustc channel");
+            .output()
+            .expect("could not parse rustc channel");
         if !output.status.success() {
             panic!("could not execute rustc");
         }
-        let output = std::str::from_utf8(&output.stdout).expect("rustc version output was not valid utf8");
+        let output =
+            std::str::from_utf8(&output.stdout).expect("rustc version output was not valid utf8");
         let release = match output.lines().find(|line| line.starts_with("release: ")) {
             Some(line) => &line["release: ".len()..],
             None => panic!("could not find rustc release"),
