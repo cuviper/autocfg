@@ -1,0 +1,6 @@
+[package]
+name = "auto_cfg"
+version = "0.1.0"
+authors = ["Josh Stone <cuviper@gmail.com>"]
+license = "MIT"
+description = "typo: did you mean to use autocfg?"
