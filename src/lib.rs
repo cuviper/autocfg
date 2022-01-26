@@ -175,17 +175,20 @@ impl AutoCfg {
         let rustflags = if target != env::var_os("HOST")
             || dir_contains_target(&target, &dir, env::var_os("CARGO_TARGET_DIR"))
         {
-            env::var("RUSTFLAGS").ok().map(|rustflags| {
-                // This is meant to match how cargo handles the RUSTFLAG environment
-                // variable.
-                // See https://github.com/rust-lang/cargo/blob/69aea5b6f69add7c51cca939a79644080c0b0ba0/src/cargo/core/compiler/build_context/target_info.rs#L434-L441
-                rustflags
-                    .split(' ')
-                    .map(str::trim)
-                    .filter(|s| !s.is_empty())
-                    .map(str::to_string)
-                    .collect::<Vec<String>>()
-            })
+            env::var("CARGO_ENCODED_RUSTFLAGS")
+                .or_else(|_| env::var("RUSTFLAGS"))
+                .ok()
+                .map(|rustflags| {
+                    // This is meant to match how cargo handles the RUSTFLAG environment
+                    // variable.
+                    // See https://github.com/rust-lang/cargo/blob/69aea5b6f69add7c51cca939a79644080c0b0ba0/src/cargo/core/compiler/build_context/target_info.rs#L434-L441
+                    rustflags
+                        .split(' ')
+                        .map(str::trim)
+                        .filter(|s| !s.is_empty())
+                        .map(str::to_string)
+                        .collect::<Vec<String>>()
+                })
         } else {
             None
         };
