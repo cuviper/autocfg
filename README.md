@@ -4,7 +4,7 @@ autocfg
 [![autocfg crate](https://img.shields.io/crates/v/autocfg.svg)](https://crates.io/crates/autocfg)
 [![autocfg documentation](https://docs.rs/autocfg/badge.svg)](https://docs.rs/autocfg)
 ![minimum rustc 1.0](https://img.shields.io/badge/rustc-1.0+-red.svg)
-[![Travis Status](https://travis-ci.org/cuviper/autocfg.svg?branch=master)](https://travis-ci.org/cuviper/autocfg)
+![build status](https://github.com/cuviper/autocfg/workflows/master/badge.svg)
 
 A Rust library for build scripts to automatically configure code based on
 compiler support.  Code snippets are dynamically tested to see if the `rustc`
@@ -31,7 +31,7 @@ fn main() {
     ac.emit_has_type("i128");
 
     // (optional) We don't need to rerun for anything external.
-    autocfg::rerun_path(file!());
+    autocfg::rerun_path("build.rs");
 }
 ```
 
@@ -42,6 +42,9 @@ should only be used when the compiler supports it.
 
 
 ## Release Notes
+
+- 0.1.8 (2022-02-07)
+  - Re-export from autocfg 1.1.0 -- please upgrade!
 
 - 0.1.7 (2019-10-20)
   - Apply `RUSTFLAGS` when probing `$TARGET != $HOST`, mainly for sysroot, by @roblabla.
