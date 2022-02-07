@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         rust: [1.0.0, 1.5.0, 1.10.0, 1.15.0, 1.20.0, 1.25.0, 1.30.0, 1.35.0,
-               1.40.0, stable, beta, nightly]
+               1.40.0, 1.45.0, 1.50.0, 1.55.0, stable, beta, nightly]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -87,7 +87,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: 1.40.0
+          toolchain: 1.58.1
           override: true
           components: rustfmt
       - name: Check formatting
