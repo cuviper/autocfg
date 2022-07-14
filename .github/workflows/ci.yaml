@@ -22,15 +22,9 @@ jobs:
         with:
           toolchain: ${{ matrix.rust }}
       - name: Build
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --verbose
+        run: cargo build --verbose
       - name: Test
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --verbose
+        run: cargo test --verbose
 
   # try probing a target that doesn't have std at all
   no_std:
@@ -46,10 +40,7 @@ jobs:
       - name: Test
         env:
           TARGET: thumbv6m-none-eabi
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --verbose --lib
+        run: cargo test --verbose --lib
 
   # we don't even need an installed target for version checks
   missing_target:
@@ -63,10 +54,7 @@ jobs:
       - name: Test
         env:
           TARGET: thumbv6m-none-eabi
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --verbose --lib -- version
+        run: cargo test --verbose --lib -- version
 
   fmt:
     name: Format
@@ -79,7 +67,4 @@ jobs:
         with:
           components: rustfmt
       - name: Check formatting
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all --check
+        run: cargo fmt --all --check
