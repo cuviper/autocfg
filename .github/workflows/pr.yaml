@@ -11,26 +11,19 @@ jobs:
       matrix:
         rust: [1.0.0, stable]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Install
-        uses: dtolnay/rust-toolchain@master
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
-      - name: Build
-        run: cargo build --verbose
-      - name: Test
-        run: cargo test --verbose
+      - run: cargo build --verbose
+      - run: cargo test --verbose
 
   fmt:
     name: Format
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Install
-        uses: dtolnay/rust-toolchain@1.62.0
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@1.62.0
         with:
           components: rustfmt
-      - name: Check formatting
-        run: cargo fmt --all --check
+      - run: cargo fmt --all --check

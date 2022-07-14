@@ -15,56 +15,43 @@ jobs:
         rust: [1.0.0, 1.5.0, 1.10.0, 1.15.0, 1.20.0, 1.25.0, 1.30.0, 1.35.0,
                1.40.0, 1.45.0, 1.50.0, 1.55.0, stable, beta, nightly]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Install
-        uses: dtolnay/rust-toolchain@master
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
-      - name: Build
-        run: cargo build --verbose
-      - name: Test
-        run: cargo test --verbose
+      - run: cargo build --verbose
+      - run: cargo test --verbose
 
   # try probing a target that doesn't have std at all
   no_std:
     name: No Std
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v1
-      - name: Install
-        uses: dtolnay/rust-toolchain@stable
+      - uses: actions/checkout@v1
+      - uses: dtolnay/rust-toolchain@stable
         with:
           target: thumbv6m-none-eabi
-      - name: Test
+      - run: cargo test --verbose --lib
         env:
           TARGET: thumbv6m-none-eabi
-        run: cargo test --verbose --lib
 
   # we don't even need an installed target for version checks
   missing_target:
     name: Missing Target
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v1
-      - name: Install
-        uses: dtolnay/rust-toolchain@stable
-      - name: Test
+      - uses: actions/checkout@v1
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo test --verbose --lib -- version
         env:
           TARGET: thumbv6m-none-eabi
-        run: cargo test --verbose --lib -- version
 
   fmt:
     name: Format
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Install
-        uses: dtolnay/rust-toolchain@1.62.0
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@1.62.0
         with:
           components: rustfmt
-      - name: Check formatting
-        run: cargo fmt --all --check
+      - run: cargo fmt --all --check
