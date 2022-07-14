@@ -14,11 +14,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Install
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
-          profile: minimal
-          override: true
       - name: Build
         uses: actions-rs/cargo@v1
         with:
@@ -37,14 +35,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Install
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@1.62.0
         with:
-          profile: minimal
-          toolchain: 1.58.1
-          override: true
           components: rustfmt
       - name: Check formatting
         uses: actions-rs/cargo@v1
         with:
           command: fmt
-          args: --all -- --check
+          args: --all --check
