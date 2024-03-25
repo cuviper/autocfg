@@ -216,6 +216,11 @@ impl AutoCfg {
             .arg(&self.out_dir)
             .arg("--emit=llvm-ir");
 
+        let can_cap_lints = self.probe_rustc_version(1, 3);
+        if can_cap_lints {
+            command.arg("--cap-lints=allow");
+        }
+
         if let Some(target) = self.target.as_ref() {
             command.arg("--target").arg(target);
         }
