@@ -447,7 +447,7 @@ fn dir_contains_target(
 
                 cargo_target_dir
                     .to_str()
-                    .map(|cargo_target_dir| dir.contains(&cargo_target_dir))
+                    .map(|cargo_target_dir| dir.contains(cargo_target_dir))
             })
         })
         .unwrap_or(false)
