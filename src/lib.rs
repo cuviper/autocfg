@@ -83,6 +83,8 @@ mod tests;
 pub struct AutoCfg {
     out_dir: PathBuf,
     rustc: PathBuf,
+    rustc_wrapper: Option<PathBuf>,
+    rustc_workspace_wrapper: Option<PathBuf>,
     rustc_version: Version,
     target: Option<OsString>,
     no_std: bool,
@@ -168,6 +170,8 @@ impl AutoCfg {
 
         let mut ac = AutoCfg {
             rustflags: rustflags(&target, &dir),
+            rustc_wrapper: get_rustc_wrapper(false),
+            rustc_workspace_wrapper: get_rustc_wrapper(true),
             out_dir: dir,
             rustc: rustc,
             rustc_version: rustc_version,
@@ -234,7 +238,18 @@ impl AutoCfg {
         static ID: AtomicUsize = ATOMIC_USIZE_INIT;
 
         let id = ID.fetch_add(1, Ordering::Relaxed);
-        let mut command = Command::new(&self.rustc);
+
+        // Build the command with possible wrappers.
+        let mut rustc = self
+            .rustc_wrapper
+            .iter()
+            .chain(self.rustc_workspace_wrapper.iter())
+            .chain(Some(&self.rustc));
+        let mut command = Command::new(rustc.next().unwrap());
+        for arg in rustc {
+            command.arg(arg);
+        }
+
         command
             .arg("--crate-name")
             .arg(format!("probe{}", id))
@@ -477,4 +492,28 @@ fn rustflags(target: &Option<OsString>, dir: &Path) -> Vec<String> {
     }
 
     Vec::new()
+}
+
+fn get_rustc_wrapper(workspace: bool) -> Option<PathBuf> {
+    // We didn't really know whether the workspace wrapper is applicable until Cargo started
+    // deliberately setting or unsetting it in rust-lang/cargo#9601. We'll use the encoded
+    // rustflags as a proxy for that change for now, but we could instead check version 1.55.
+    if workspace && env::var_os("CARGO_ENCODED_RUSTFLAGS").is_none() {
+        return None;
+    }
+
+    let name = if workspace {
+        "RUSTC_WORKSPACE_WRAPPER"
+    } else {
+        "RUSTC_WRAPPER"
+    };
+
+    if let Some(wrapper) = env::var_os(name) {
+        // NB: `OsStr` didn't get `len` or `is_empty` until 1.9.
+        if wrapper != OsString::new() {
+            return Some(wrapper.into());
+        }
+    }
+
+    None
 }
