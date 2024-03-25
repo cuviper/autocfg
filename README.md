@@ -43,6 +43,11 @@ should only be used when the compiler supports it.
 
 ## Release Notes
 
+- 1.2.0 (2024-03-25)
+
+  - Add `no_std` and `set_no_std` to control the use of `#![no_std]` in probes.
+  - Use `RUSTC_WRAPPER` and `RUSTC_WORKSPACE_WRAPPER` when they are set.
+
 - 1.1.0 (2022-02-07)
   - Use `CARGO_ENCODED_RUSTFLAGS` when it is set.
 
