@@ -15,7 +15,7 @@ jobs:
         rust: [1.0.0, 1.5.0, 1.10.0, 1.15.0, 1.20.0, 1.25.0, 1.30.0, 1.35.0,
                1.40.0, 1.45.0, 1.50.0, 1.55.0, 1.60.0, stable, beta, nightly]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
@@ -27,7 +27,7 @@ jobs:
     name: No Std
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:
           target: thumbv6m-none-eabi
@@ -40,7 +40,7 @@ jobs:
     name: Missing Target
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo test --verbose --lib -- version
         env:
@@ -50,7 +50,7 @@ jobs:
     name: Format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@1.62.0
         with:
           components: rustfmt
