@@ -10,5 +10,6 @@ readme = "README.md"
 keywords = ["rustc", "build", "autoconf"]
 categories = ["development-tools::build-utils"]
 exclude = ["/.github/**"]
+rust-version = "1.0"
 
 [dependencies]
