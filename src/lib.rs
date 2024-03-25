@@ -119,7 +119,7 @@ pub fn rerun_env(var: &str) {
     println!("cargo:rerun-if-env-changed={}", var);
 }
 
-/// Create a new `AutoCfg` instance.
+/// Creates a new `AutoCfg` instance.
 ///
 /// # Panics
 ///
@@ -129,7 +129,7 @@ pub fn new() -> AutoCfg {
 }
 
 impl AutoCfg {
-    /// Create a new `AutoCfg` instance.
+    /// Creates a new `AutoCfg` instance.
     ///
     /// # Common errors
     ///
@@ -144,7 +144,7 @@ impl AutoCfg {
         }
     }
 
-    /// Create a new `AutoCfg` instance with the specified output directory.
+    /// Creates a new `AutoCfg` instance with the specified output directory.
     ///
     /// # Common errors
     ///
@@ -188,7 +188,34 @@ impl AutoCfg {
         Ok(ac)
     }
 
-    /// Test whether the current `rustc` reports a version greater than
+    /// Returns whether `AutoCfg` is using `#![no_std]` in its probes.
+    ///
+    /// This is automatically detected during construction -- if an empty probe
+    /// fails while one with `#![no_std]` succeeds, then the attribute will be
+    /// used for all further probes. This is usually only necessary when the
+    /// `TARGET` lacks `std` altogether. If neither succeeds, `no_std` is not
+    /// set, but that `AutoCfg` will probably only work for version checks.
+    ///
+    /// This attribute changes the implicit [prelude] from `std` to `core`,
+    /// which may affect the paths you need to use in other probes. It also
+    /// restricts some types that otherwise get additional methods in `std`,
+    /// like floating-point trigonometry and slice sorting.
+    ///
+    /// See also [`set_no_std`](#method.set_no_std).
+    ///
+    /// [prelude]: https://doc.rust-lang.org/reference/crates-and-source-files.html#preludes-and-no_std
+    pub fn no_std(&self) -> bool {
+        self.no_std
+    }
+
+    /// Sets whether `AutoCfg` should use `#![no_std]` in its probes.
+    ///
+    /// See also [`no_std`](#method.no_std).
+    pub fn set_no_std(&mut self, no_std: bool) {
+        self.no_std = no_std;
+    }
+
+    /// Tests whether the current `rustc` reports a version greater than
     /// or equal to "`major`.`minor`".
     pub fn probe_rustc_version(&self, major: usize, minor: usize) -> bool {
         self.rustc_version >= Version::new(major, minor, 0)
