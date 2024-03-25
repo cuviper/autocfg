@@ -1,6 +1,8 @@
 use super::AutoCfg;
 use std::env;
 use std::path::Path;
+use std::process::Command;
+use std::str;
 
 impl AutoCfg {
     fn core_std(&self, path: &str) -> String {
@@ -21,6 +23,32 @@ impl AutoCfg {
             Some(d) => Self::with_dir(d),
             None => Self::with_dir("target"),
         }
+    }
+
+    fn assert_nightly(&self, probe_result: bool) {
+        // Get rustc's verbose version
+        let output = Command::new(&self.rustc)
+            .args(&["--version", "--verbose"])
+            .output()
+            .unwrap();
+        if !output.status.success() {
+            panic!("could not execute rustc")
+        }
+        let output = str::from_utf8(&output.stdout).unwrap();
+
+        // Find the release line in the verbose version output.
+        let release = match output.lines().find(|line| line.starts_with("release: ")) {
+            Some(line) => &line["release: ".len()..],
+            None => panic!("could not find rustc release"),
+        };
+
+        // Check for nightly channel info, e.g. "-nightly", "-dev"
+        let nightly = match release.find('-') {
+            Some(i) => &release[i..] == "-nightly" || &release[i..] == "-dev",
+            None => false,
+        };
+
+        assert_eq!(nightly, probe_result);
     }
 }
 
@@ -131,6 +159,17 @@ fn probe_constant() {
     assert!(ac.probe_constant("1 + 2 + 3"));
     ac.assert_min(1, 33, ac.probe_constant("{ let x = 1 + 2 + 3; x * x }"));
     ac.assert_min(1, 39, ac.probe_constant(r#""test".len()"#));
+}
+
+#[test]
+fn prope_feature() {
+    let ac = AutoCfg::for_test().unwrap();
+    // an empty #![features()] has no effect
+    assert!(ac.probe_features(&[], ""));
+    // stabilized feature succeeds
+    ac.assert_nightly(ac.probe_features(&["rust1"], ""));
+    // fake feature fails
+    ac.assert_nightly(!ac.probe_features(&["RUSTC_DONT_MAKE_ME_A_LIAR"], ""));
 }
 
 #[test]
