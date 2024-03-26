@@ -88,6 +88,7 @@ pub struct AutoCfg {
     rustc_version: Version,
     target: Option<OsString>,
     no_std: bool,
+    features: Vec<String>,
     rustflags: Vec<String>,
 }
 
@@ -176,6 +177,7 @@ impl AutoCfg {
             rustc: rustc,
             rustc_version: rustc_version,
             target: target,
+            features: Vec::new(),
             no_std: false,
         };
 
@@ -270,6 +272,11 @@ impl AutoCfg {
 
         if self.no_std {
             try!(stdin.write_all(b"#![no_std]\n").map_err(error::from_io));
+        }
+        for feature in &self.features {
+            try!(stdin
+                .write_all(format!("#![feature({})]\n", feature).as_bytes())
+                .map_err(error::from_io));
         }
         try!(stdin.write_all(code.as_ref()).map_err(error::from_io));
         drop(stdin);
@@ -419,6 +426,16 @@ impl AutoCfg {
         if self.probe_constant(expr) {
             emit(cfg);
         }
+    }
+
+    /// Run some autocfg probes with a set of features enabled.
+    ///
+    /// This adds `#![feature(FEATURE)]` to the start of all probes done with
+    /// the callback's `AutoCfg` for each enabled feature.
+    pub fn with_features<F: for<'a> FnOnce(&'a mut AutoCfg)>(&mut self, features: &[&str], f: F) {
+        self.features.extend(features.iter().map(|s| s.to_string()));
+        f(self);
+        self.features.truncate(self.features.len() - features.len());
     }
 }
 
