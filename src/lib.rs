@@ -420,6 +420,42 @@ impl AutoCfg {
             emit(cfg);
         }
     }
+
+    /// Tests whether the given features can be used.
+    ///
+    /// To ensure the features work as expected, it is highly recommended to
+    /// attempt to use the features.
+    ///
+    /// The test code is subject to change, but currently looks like:
+    ///
+    /// ```ignore
+    /// #![feature(FEATURES)]
+    /// CODE
+    /// ```
+    pub fn probe_features(&self, features: &[&str], code: &str) -> bool {
+        use std::fmt::Write;
+        let probe = &mut String::new();
+        write!(probe, "#![feature(").unwrap();
+        for feature in features {
+            write!(probe, "{},", feature).unwrap();
+        }
+        write!(probe, ")] {}", code).unwrap();
+        self.probe(probe).unwrap_or(false)
+    }
+
+    /// Emits a config value `has_FEATURE` if `probe_features` returns true.
+    pub fn emit_has_feature(&self, feature: &str, code: &str) {
+        if self.probe_features(&[feature], code) {
+            emit(&format!("has_{}", feature));
+        }
+    }
+
+    /// Emits the given `cfg` value if `probe_features` returns true.
+    pub fn emit_features_cfg(&self, features: &[&str], code: &str, cfg: &str) {
+        if self.probe_features(features, code) {
+            emit(cfg)
+        }
+    }
 }
 
 fn mangle(s: &str) -> String {
