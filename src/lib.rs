@@ -61,6 +61,7 @@ macro_rules! try {
 
 use std::env;
 use std::ffi::OsString;
+use std::fmt::Arguments;
 use std::fs;
 use std::io::{stderr, Write};
 use std::path::{Path, PathBuf};
@@ -180,11 +181,11 @@ impl AutoCfg {
         };
 
         // Sanity check with and without `std`.
-        if !ac.probe("").unwrap_or(false) {
-            ac.no_std = true;
-            if !ac.probe("").unwrap_or(false) {
+        if !ac.probe_raw("").is_ok() {
+            if ac.probe_raw("#![no_std]").is_ok() {
+                ac.no_std = true;
+            } else {
                 // Neither worked, so assume nothing...
-                ac.no_std = false;
                 let warning = b"warning: autocfg could not probe for `std`\n";
                 stderr().write_all(warning).ok();
             }
@@ -207,7 +208,7 @@ impl AutoCfg {
     ///
     /// See also [`set_no_std`](#method.set_no_std).
     ///
-    /// [prelude]: https://doc.rust-lang.org/reference/crates-and-source-files.html#preludes-and-no_std
+    /// [prelude]: https://doc.rust-lang.org/reference/names/preludes.html#the-no_std-attribute
     pub fn no_std(&self) -> bool {
         self.no_std
     }
@@ -233,7 +234,7 @@ impl AutoCfg {
         }
     }
 
-    fn probe<T: AsRef<[u8]>>(&self, code: T) -> Result<bool, Error> {
+    fn probe_fmt<'a>(&self, source: Arguments<'a>) -> Result<(), Error> {
         #[allow(deprecated)]
         static ID: AtomicUsize = ATOMIC_USIZE_INIT;
 
@@ -268,14 +269,69 @@ impl AutoCfg {
         let mut child = try!(command.spawn().map_err(error::from_io));
         let mut stdin = child.stdin.take().expect("rustc stdin");
 
-        if self.no_std {
-            try!(stdin.write_all(b"#![no_std]\n").map_err(error::from_io));
-        }
-        try!(stdin.write_all(code.as_ref()).map_err(error::from_io));
+        try!(stdin.write_fmt(source).map_err(error::from_io));
         drop(stdin);
 
-        let status = try!(child.wait().map_err(error::from_io));
-        Ok(status.success())
+        match child.wait() {
+            Ok(status) if status.success() => Ok(()),
+            Ok(status) => Err(error::from_exit(status)),
+            Err(error) => Err(error::from_io(error)),
+        }
+    }
+
+    fn probe<'a>(&self, code: Arguments<'a>) -> bool {
+        let result = if self.no_std {
+            self.probe_fmt(format_args!("#![no_std]\n{}", code))
+        } else {
+            self.probe_fmt(code)
+        };
+        result.is_ok()
+    }
+
+    /// Tests whether the given code can be compiled as a Rust library.
+    ///
+    /// This will only return `Ok` if the compiler ran and exited successfully,
+    /// per `ExitStatus::success()`.
+    /// The code is passed to the compiler exactly as-is, notably not even
+    /// adding the [`#![no_std]`][Self::no_std] attribute like other probes.
+    ///
+    /// Raw probes are useful for testing functionality that's not yet covered
+    /// by the rest of the `AutoCfg` API. For example, the following attribute
+    /// **must** be used at the crate level, so it wouldn't work within the code
+    /// templates used by other `probe_*` methods.
+    ///
+    /// ```
+    /// # extern crate autocfg;
+    /// # // Normally, cargo will set `OUT_DIR` for build scripts.
+    /// # std::env::set_var("OUT_DIR", "target");
+    /// let ac = autocfg::new();
+    /// assert!(ac.probe_raw("#![no_builtins]").is_ok());
+    /// ```
+    ///
+    /// Rust nightly features could be tested as well -- ideally including a
+    /// code sample to ensure the unstable feature still works as expected.
+    /// For example, `slice::group_by` was renamed to `chunk_by` when it was
+    /// stabilized, even though the feature name was unchanged, so testing the
+    /// `#![feature(..)]` alone wouldn't reveal that. For larger snippets,
+    /// [`include_str!`] may be useful to load them from separate files.
+    ///
+    /// ```
+    /// # extern crate autocfg;
+    /// # // Normally, cargo will set `OUT_DIR` for build scripts.
+    /// # std::env::set_var("OUT_DIR", "target");
+    /// let ac = autocfg::new();
+    /// let code = r#"
+    ///     #![feature(slice_group_by)]
+    ///     pub fn probe(slice: &[i32]) -> impl Iterator<Item = &[i32]> {
+    ///         slice.group_by(|a, b| a == b)
+    ///     }
+    /// "#;
+    /// if ac.probe_raw(code).is_ok() {
+    ///     autocfg::emit("has_slice_group_by");
+    /// }
+    /// ```
+    pub fn probe_raw(&self, code: &str) -> Result<(), Error> {
+        self.probe_fmt(format_args!("{}", code))
     }
 
     /// Tests whether the given sysroot crate can be used.
@@ -286,8 +342,8 @@ impl AutoCfg {
     /// extern crate CRATE as probe;
     /// ```
     pub fn probe_sysroot_crate(&self, name: &str) -> bool {
-        self.probe(format!("extern crate {} as probe;", name)) // `as _` wasn't stabilized until Rust 1.33
-            .unwrap_or(false)
+        // Note: `as _` wasn't stabilized until Rust 1.33
+        self.probe(format_args!("extern crate {} as probe;", name))
     }
 
     /// Emits a config value `has_CRATE` if `probe_sysroot_crate` returns true.
@@ -305,7 +361,7 @@ impl AutoCfg {
     /// pub use PATH;
     /// ```
     pub fn probe_path(&self, path: &str) -> bool {
-        self.probe(format!("pub use {};", path)).unwrap_or(false)
+        self.probe(format_args!("pub use {};", path))
     }
 
     /// Emits a config value `has_PATH` if `probe_path` returns true.
@@ -333,8 +389,7 @@ impl AutoCfg {
     /// pub trait Probe: TRAIT + Sized {}
     /// ```
     pub fn probe_trait(&self, name: &str) -> bool {
-        self.probe(format!("pub trait Probe: {} + Sized {{}}", name))
-            .unwrap_or(false)
+        self.probe(format_args!("pub trait Probe: {} + Sized {{}}", name))
     }
 
     /// Emits a config value `has_TRAIT` if `probe_trait` returns true.
@@ -362,8 +417,7 @@ impl AutoCfg {
     /// pub type Probe = TYPE;
     /// ```
     pub fn probe_type(&self, name: &str) -> bool {
-        self.probe(format!("pub type Probe = {};", name))
-            .unwrap_or(false)
+        self.probe(format_args!("pub type Probe = {};", name))
     }
 
     /// Emits a config value `has_TYPE` if `probe_type` returns true.
@@ -391,8 +445,7 @@ impl AutoCfg {
     /// pub fn probe() { let _ = EXPR; }
     /// ```
     pub fn probe_expression(&self, expr: &str) -> bool {
-        self.probe(format!("pub fn probe() {{ let _ = {}; }}", expr))
-            .unwrap_or(false)
+        self.probe(format_args!("pub fn probe() {{ let _ = {}; }}", expr))
     }
 
     /// Emits the given `cfg` value if `probe_expression` returns true.
@@ -410,8 +463,7 @@ impl AutoCfg {
     /// pub const PROBE: () = ((), EXPR).0;
     /// ```
     pub fn probe_constant(&self, expr: &str) -> bool {
-        self.probe(format!("pub const PROBE: () = ((), {}).0;", expr))
-            .unwrap_or(false)
+        self.probe(format_args!("pub const PROBE: () = ((), {}).0;", expr))
     }
 
     /// Emits the given `cfg` value if `probe_constant` returns true.
