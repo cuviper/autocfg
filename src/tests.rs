@@ -134,6 +134,12 @@ fn probe_constant() {
 }
 
 #[test]
+fn cap_lints() {
+    let ac = AutoCfg::for_test().unwrap();
+    ac.assert_min(1, 3, ac.probe_constant("1000u8"));
+}
+
+#[test]
 fn dir_does_not_contain_target() {
     assert!(!super::dir_contains_target(
         &Some("x86_64-unknown-linux-gnu".into()),
