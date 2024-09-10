@@ -100,6 +100,10 @@ pub struct AutoCfg {
 /// This looks like: `cargo:rustc-cfg=CFG`
 ///
 /// Cargo will use this in arguments to rustc, like `--cfg CFG`.
+///
+/// This does not automatically call [`emit_possibility`]
+/// so the compiler my generate an [`unexpected_cfgs` warning][check-cfg-flags].
+/// However, all the builtin emit methods on [`AutoCfg`] call [`emit_possibility`] automatically.
 pub fn emit(cfg: &str) {
     println!("cargo:rustc-cfg={}", cfg);
 }
@@ -123,6 +127,25 @@ pub fn rerun_path(path: &str) {
 /// versions of cargo will simply ignore the directive.
 pub fn rerun_env(var: &str) {
     println!("cargo:rerun-if-env-changed={}", var);
+}
+
+/// Indicates to rustc that a config flag should not generate an [`unexpected_cfgs` warning][check-cfg-flags]
+///
+/// This looks like `cargo:cargo:rustc-check-cfg=cfg(VAR)`
+///
+/// As of rust 1.80, the compiler does [automatic checking of cfgs at compile time][check-cfg-flags].
+/// All custom configuration flags must be known to rustc, or they will generate a warning.
+/// This is done automatically when calling the builtin emit methods on [`AutoCfg`],
+/// but not when calling [`autocfg::emit`](crate::emit) directly.
+///
+/// Versions before rust 1.80 will simply ignore this directive.
+///
+/// This function indicates to the compiler that the config flag never has a value.
+/// If this is not desired, see [the blog post][check-cfg].
+///
+/// [check-cfg-flags]: https://blog.rust-lang.org/2024/05/06/check-cfg.html
+pub fn emit_possibility(cfg: &str) {
+    println!("cargo:rustc-check-cfg=cfg({})", cfg);
 }
 
 /// Creates a new `AutoCfg` instance.
@@ -230,8 +253,10 @@ impl AutoCfg {
     /// Sets a `cfg` value of the form `rustc_major_minor`, like `rustc_1_29`,
     /// if the current `rustc` is at least that version.
     pub fn emit_rustc_version(&self, major: usize, minor: usize) {
+        let cfg_flag = format!("rustc_{}_{}", major, minor);
+        emit_possibility(&cfg_flag);
         if self.probe_rustc_version(major, minor) {
-            emit(&format!("rustc_{}_{}", major, minor));
+            emit(&cfg_flag);
         }
     }
 
@@ -345,8 +370,10 @@ impl AutoCfg {
 
     /// Emits a config value `has_CRATE` if `probe_sysroot_crate` returns true.
     pub fn emit_sysroot_crate(&self, name: &str) {
+        let cfg_flag = format!("has_{}", mangle(name));
+        emit_possibility(&cfg_flag);
         if self.probe_sysroot_crate(name) {
-            emit(&format!("has_{}", mangle(name)));
+            emit(&cfg_flag);
         }
     }
 
@@ -366,13 +393,16 @@ impl AutoCfg {
     /// Any non-identifier characters in the `path` will be replaced with
     /// `_` in the generated config value.
     pub fn emit_has_path(&self, path: &str) {
+        let cfg_flag = format!("has_{}", mangle(path));
+        emit_possibility(&cfg_flag);
         if self.probe_path(path) {
-            emit(&format!("has_{}", mangle(path)));
+            emit(&cfg_flag);
         }
     }
 
     /// Emits the given `cfg` value if `probe_path` returns true.
     pub fn emit_path_cfg(&self, path: &str, cfg: &str) {
+        emit_possibility(cfg);
         if self.probe_path(path) {
             emit(cfg);
         }
@@ -394,13 +424,16 @@ impl AutoCfg {
     /// Any non-identifier characters in the trait `name` will be replaced with
     /// `_` in the generated config value.
     pub fn emit_has_trait(&self, name: &str) {
+        let cfg_flag = format!("has_{}", mangle(name));
+        emit_possibility(&cfg_flag);
         if self.probe_trait(name) {
-            emit(&format!("has_{}", mangle(name)));
+            emit(&cfg_flag);
         }
     }
 
     /// Emits the given `cfg` value if `probe_trait` returns true.
     pub fn emit_trait_cfg(&self, name: &str, cfg: &str) {
+        emit_possibility(cfg);
         if self.probe_trait(name) {
             emit(cfg);
         }
@@ -422,13 +455,16 @@ impl AutoCfg {
     /// Any non-identifier characters in the type `name` will be replaced with
     /// `_` in the generated config value.
     pub fn emit_has_type(&self, name: &str) {
+        let cfg_flag = format!("has_{}", mangle(name));
+        emit_possibility(&cfg_flag);
         if self.probe_type(name) {
-            emit(&format!("has_{}", mangle(name)));
+            emit(&cfg_flag);
         }
     }
 
     /// Emits the given `cfg` value if `probe_type` returns true.
     pub fn emit_type_cfg(&self, name: &str, cfg: &str) {
+        emit_possibility(cfg);
         if self.probe_type(name) {
             emit(cfg);
         }
@@ -447,6 +483,7 @@ impl AutoCfg {
 
     /// Emits the given `cfg` value if `probe_expression` returns true.
     pub fn emit_expression_cfg(&self, expr: &str, cfg: &str) {
+        emit_possibility(cfg);
         if self.probe_expression(expr) {
             emit(cfg);
         }
@@ -465,6 +502,7 @@ impl AutoCfg {
 
     /// Emits the given `cfg` value if `probe_constant` returns true.
     pub fn emit_constant_cfg(&self, expr: &str, cfg: &str) {
+        emit_possibility(cfg);
         if self.probe_constant(expr) {
             emit(cfg);
         }
