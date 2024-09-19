@@ -395,11 +395,7 @@ impl AutoCfg {
     /// Any non-identifier characters in the `path` will be replaced with
     /// `_` in the generated config value.
     pub fn emit_has_path(&self, path: &str) {
-        let cfg_flag = format!("has_{}", mangle(path));
-        emit_possibility(&cfg_flag);
-        if self.probe_path(path) {
-            emit(&cfg_flag);
-        }
+        self.emit_path_cfg(path, &format!("has_{}", mangle(path)));
     }
 
     /// Emits the given `cfg` value if `probe_path` returns true.
@@ -426,11 +422,7 @@ impl AutoCfg {
     /// Any non-identifier characters in the trait `name` will be replaced with
     /// `_` in the generated config value.
     pub fn emit_has_trait(&self, name: &str) {
-        let cfg_flag = format!("has_{}", mangle(name));
-        emit_possibility(&cfg_flag);
-        if self.probe_trait(name) {
-            emit(&cfg_flag);
-        }
+        self.emit_trait_cfg(name, &format!("has_{}", mangle(name)));
     }
 
     /// Emits the given `cfg` value if `probe_trait` returns true.
@@ -457,11 +449,7 @@ impl AutoCfg {
     /// Any non-identifier characters in the type `name` will be replaced with
     /// `_` in the generated config value.
     pub fn emit_has_type(&self, name: &str) {
-        let cfg_flag = format!("has_{}", mangle(name));
-        emit_possibility(&cfg_flag);
-        if self.probe_type(name) {
-            emit(&cfg_flag);
-        }
+        self.emit_type_cfg(name, &format!("has_{}", mangle(name)));
     }
 
     /// Emits the given `cfg` value if `probe_type` returns true.
