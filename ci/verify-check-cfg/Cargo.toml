@@ -1,0 +1,12 @@
+[package]
+# NOTE: Cannot be in workspace because of rustc 1.0 support
+name = "autocfg-verify-check-cfg"
+description = "A dummy crate to verify autocfg is emitting check-cfg directives"
+version = "0.1.0"
+edition = "2021"
+# only for testing
+publish = false
+
+[build-dependencies]
+autocfg = { path = "../.." }
+
