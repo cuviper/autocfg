@@ -104,6 +104,8 @@ pub struct AutoCfg {
 /// This does not automatically call [`emit_possibility`]
 /// so the compiler my generate an [`unexpected_cfgs` warning][check-cfg-flags].
 /// However, all the builtin emit methods on [`AutoCfg`] call [`emit_possibility`] automatically.
+///
+/// [check-cfg-flags]: https://blog.rust-lang.org/2024/05/06/check-cfg.html
 pub fn emit(cfg: &str) {
     println!("cargo:rustc-cfg={}", cfg);
 }
@@ -131,7 +133,7 @@ pub fn rerun_env(var: &str) {
 
 /// Indicates to rustc that a config flag should not generate an [`unexpected_cfgs` warning][check-cfg-flags]
 ///
-/// This looks like `cargo:cargo:rustc-check-cfg=cfg(VAR)`
+/// This looks like `cargo:rustc-check-cfg=cfg(VAR)`
 ///
 /// As of rust 1.80, the compiler does [automatic checking of cfgs at compile time][check-cfg-flags].
 /// All custom configuration flags must be known to rustc, or they will generate a warning.
