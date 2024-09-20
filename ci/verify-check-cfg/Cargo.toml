@@ -3,7 +3,7 @@
 name = "autocfg-verify-check-cfg"
 description = "A dummy crate to verify autocfg is emitting check-cfg directives"
 version = "0.1.0"
-edition = "2021"
+edition = "2015"
 # only for testing
 publish = false
 

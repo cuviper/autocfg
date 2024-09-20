@@ -1,3 +1,5 @@
+extern crate autocfg;
+
 pub fn main() {
     let cfg = autocfg::AutoCfg::new().unwrap();
 
@@ -8,7 +10,7 @@ pub fn main() {
     // always true
     cfg.emit_rustc_version(1, 0);
     // should always be false
-    cfg.emit_rustc_version(7, u32::MAX as usize);
+    cfg.emit_rustc_version(7, std::u32::MAX as usize);
 
     // always true
     cfg.emit_has_path("std::vec::Vec");
