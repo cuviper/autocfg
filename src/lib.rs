@@ -91,6 +91,7 @@ pub struct AutoCfg {
     target: Option<OsString>,
     no_std: bool,
     rustflags: Vec<String>,
+    uuid: u64,
 }
 
 /// Writes a config flag for rustc on standard out.
@@ -176,6 +177,7 @@ impl AutoCfg {
             rustc_version: rustc_version,
             target: target,
             no_std: false,
+            uuid: new_uuid(),
         };
 
         // Sanity check with and without `std`.
@@ -232,16 +234,20 @@ impl AutoCfg {
         }
     }
 
-    fn probe_fmt<'a>(&self, source: Arguments<'a>) -> Result<(), Error> {
+    /// Returns a new (hopefully unique) crate name for probes.
+    fn new_crate_name(&self) -> String {
         #[allow(deprecated)]
         static ID: AtomicUsize = ATOMIC_USIZE_INIT;
 
         let id = ID.fetch_add(1, Ordering::Relaxed);
+        format!("autocfg_{:016x}_{}", self.uuid, id)
+    }
 
+    fn probe_fmt<'a>(&self, source: Arguments<'a>) -> Result<(), Error> {
         let mut command = self.rustc.command();
         command
             .arg("--crate-name")
-            .arg(format!("probe{}", id))
+            .arg(self.new_crate_name())
             .arg("--crate-type=lib")
             .arg("--out-dir")
             .arg(&self.out_dir)
@@ -532,4 +538,22 @@ fn rustflags(target: &Option<OsString>, dir: &Path) -> Vec<String> {
     }
 
     Vec::new()
+}
+
+/// Generates a numeric ID to use in probe crate names.
+///
+/// This attempts to be random, within the constraints of Rust 1.0 and no dependencies.
+fn new_uuid() -> u64 {
+    const FNV_OFFSET_BASIS: u64 = 0xcbf2_9ce4_8422_2325;
+    const FNV_PRIME: u64 = 0x100_0000_01b3;
+
+    // This set should have an actual random hasher.
+    let set: std::collections::HashSet<u64> = (0..256).collect();
+
+    // Feed the `HashSet`-shuffled order into FNV-1a.
+    let mut hash: u64 = FNV_OFFSET_BASIS;
+    for x in set {
+        hash = (hash ^ x).wrapping_mul(FNV_PRIME);
+    }
+    hash
 }
