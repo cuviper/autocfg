@@ -20,7 +20,8 @@
 //!
 //! fn main() {
 //! #   // Normally, cargo will set `OUT_DIR` for build scripts.
-//! #   std::env::set_var("OUT_DIR", "target");
+//! #   let exe = std::env::current_exe().unwrap();
+//! #   std::env::set_var("OUT_DIR", exe.parent().unwrap());
 //!     let ac = autocfg::new();
 //!     ac.emit_has_type("i128");
 //!
@@ -297,7 +298,8 @@ impl AutoCfg {
     /// ```
     /// # extern crate autocfg;
     /// # // Normally, cargo will set `OUT_DIR` for build scripts.
-    /// # std::env::set_var("OUT_DIR", "target");
+    /// # let exe = std::env::current_exe().unwrap();
+    /// # std::env::set_var("OUT_DIR", exe.parent().unwrap());
     /// let ac = autocfg::new();
     /// assert!(ac.probe_raw("#![no_builtins]").is_ok());
     /// ```
@@ -312,7 +314,8 @@ impl AutoCfg {
     /// ```
     /// # extern crate autocfg;
     /// # // Normally, cargo will set `OUT_DIR` for build scripts.
-    /// # std::env::set_var("OUT_DIR", "target");
+    /// # let exe = std::env::current_exe().unwrap();
+    /// # std::env::set_var("OUT_DIR", exe.parent().unwrap());
     /// let ac = autocfg::new();
     /// let code = r#"
     ///     #![feature(slice_group_by)]
