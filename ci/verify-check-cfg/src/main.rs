@@ -1,3 +1,4 @@
+#![allow(unknown_lints)]
 #![deny(unexpected_cfgs)]
 
 macro_rules! test_cfgs {

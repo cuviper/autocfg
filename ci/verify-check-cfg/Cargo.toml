@@ -7,6 +7,8 @@ edition = "2015"
 # only for testing
 publish = false
 
+build = "build.rs"
+
 [build-dependencies]
 autocfg = { path = "../.." }
 
