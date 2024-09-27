@@ -14,6 +14,7 @@ jobs:
       matrix:
         rust: [1.0.0, 1.5.0, 1.10.0, 1.15.0, 1.20.0, 1.25.0, 1.30.0, 1.35.0,
                1.40.0, 1.45.0, 1.50.0, 1.55.0, 1.60.0, 1.65.0, 1.70.0, 1.75.0,
+               1.80.0, # first version with rustc-check-cfg
                stable, beta, nightly]
     steps:
       - uses: actions/checkout@v4
@@ -22,6 +23,8 @@ jobs:
           toolchain: ${{ matrix.rust }}
       - run: cargo build --verbose
       - run: cargo test --verbose
+      - run: cargo run
+        working-directory: ./ci/verify-check-cfg
 
   # try probing a target that doesn't have std at all
   no_std:
