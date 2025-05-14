@@ -272,10 +272,11 @@ impl AutoCfg {
     }
 
     fn probe_fmt<'a>(&self, source: Arguments<'a>) -> Result<(), Error> {
+        let crate_name = self.new_crate_name();
         let mut command = self.rustc.command();
         command
             .arg("--crate-name")
-            .arg(self.new_crate_name())
+            .arg(&crate_name)
             .arg("--crate-type=lib")
             .arg("--out-dir")
             .arg(&self.out_dir)
@@ -295,7 +296,16 @@ impl AutoCfg {
         drop(stdin);
 
         match child.wait() {
-            Ok(status) if status.success() => Ok(()),
+            Ok(status) if status.success() => {
+                // Try to remove the output file so it doesn't look like a build product for
+                // systems like bazel -- but this is best-effort, so we can ignore failure.
+                // The probe itself is already considered successful at this point.
+                let mut file = self.out_dir.join(crate_name);
+                file.set_extension("ll");
+                let _ = fs::remove_file(file);
+
+                Ok(())
+            }
             Ok(status) => Err(error::from_exit(status)),
             Err(error) => Err(error::from_io(error)),
         }
