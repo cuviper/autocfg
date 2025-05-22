@@ -136,3 +136,16 @@ fn probe_raw() {
         .probe_raw(&f("#![deny(dead_code)] pub fn x() {}"))
         .is_ok());
 }
+
+#[test]
+fn probe_cleanup() {
+    let dir = support::out_dir().join("autocfg_test_probe_cleanup");
+    std::fs::create_dir(&dir).unwrap();
+
+    let ac = AutoCfg::with_dir(&dir).unwrap();
+    assert!(ac.probe_type("i32"));
+
+    // NB: this is not `remove_dir_all`, so it will only work if the directory
+    // is empty -- i.e. the probe should have removed any output files.
+    std::fs::remove_dir(&dir).unwrap();
+}
