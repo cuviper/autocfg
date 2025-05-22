@@ -207,7 +207,7 @@ impl AutoCfg {
         };
 
         // Sanity check with and without `std`.
-        if !ac.probe_raw("").is_ok() {
+        if ac.probe_raw("").is_err() {
             if ac.probe_raw("#![no_std]").is_ok() {
                 ac.no_std = true;
             } else {
