@@ -325,6 +325,9 @@ impl AutoCfg {
         command.args(&self.rustflags);
 
         command.arg("-").stdin(Stdio::piped());
+        if env::var_os("AUTOCFG_SHOW_RUSTC_OUTPUT").is_none() {
+            command.stderr(Stdio::null());
+        }
         let mut child = try!(command.spawn().map_err(error::from_io));
         let mut stdin = child.stdin.take().expect("rustc stdin");
 
