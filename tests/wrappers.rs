@@ -17,6 +17,8 @@ fn test_wrappers() {
         }
     }
 
+    let original_rustc = std::env::var("RUSTC").unwrap_or_else(|_| String::from("rustc"));
+
     let out = support::out_dir();
 
     // This is used as a heuristic to detect rust-lang/cargo#9601.
@@ -44,9 +46,20 @@ fn test_wrappers() {
         }
     }
 
+    // compile the wrap_ignored wrapper
+    let wrapper_output_path = format!("{}/wrap_ignored", out.display());
+    let res = std::process::Command::new(original_rustc)
+        .arg("./tests/support/wrap_ignored.rs")
+        .arg("-o")
+        .arg(&wrapper_output_path)
+        .status()
+        .unwrap();
+    assert!(res.success(), "Failed to compile wrapper");
+    println!("{wrapper_output_path}");
+
     // Finally, make sure that `RUSTC_WRAPPER` is applied outermost
     // by using something that doesn't pass through at all.
-    env::set_var("RUSTC_WRAPPER", "./tests/wrap_ignored");
+    env::set_var("RUSTC_WRAPPER", wrapper_output_path);
     env::set_var("RUSTC_WORKSPACE_WRAPPER", "/bin/false");
     let ac = autocfg::AutoCfg::with_dir(out.as_ref()).unwrap();
     assert!(ac.probe_type("mesize")); // anything goes!

@@ -10,6 +10,6 @@ readme = "README.md"
 keywords = ["rustc", "build", "autoconf"]
 categories = ["development-tools::build-utils"]
 rust-version = "1.0"
-include = ["Cargo.toml", "LICENSE-APACHE", "LICENSE-MIT", "README.md", "src/**/*.rs"]
+include = ["Cargo.toml", "LICENSE-APACHE", "LICENSE-MIT", "README.md", "src/**/*.rs", "tests/**/*.rs"]
 
 [dependencies]
